@@ -5,7 +5,10 @@
 import { ethers } from "ethers";
 import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequence/ethers-eip712
 import { eip_validation, Response } from "./eip_processor";
-import { get_db, crate_table, insert_event } from './local_db';
+import { get_db, create_table, insert_event } from './local_db';
+
+
+
 
 
 const DB_PATH = './data/snapshot.db';
@@ -47,8 +50,12 @@ async function main() {
 
   // return (resp_str, signed_response);
 
-  var db = get_db('./data/snapshot.db');
-  // crate_table(db);
+  var db = await get_db(DB_PATH);
+  await create_table(db);
+  await insert_event(db, JSON.parse(eip712_doc), response, signed_response);
+
+
+  db.close();
 }
 
 main();
