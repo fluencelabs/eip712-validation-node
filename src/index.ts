@@ -5,7 +5,7 @@
 import { ethers } from "ethers";
 import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequence/ethers-eip712
 import { eip_validation, Response } from "./eip_processor";
-import { get_db, create_table, insert_event } from './local_db';
+import { get_db, create_table, insert_event, DBRecord } from './local_db';
 
 var sqlite3 = require('sqlite3').verbose();
 

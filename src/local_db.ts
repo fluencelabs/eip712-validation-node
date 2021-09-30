@@ -6,6 +6,17 @@ const sqlite3 = sqlite.verbose();
 import { Response } from './eip_processor';
 
 
+export interface DBRecord {
+    snapshot_id: number;
+    event_address: string;
+    event_signature: string;
+    eip712_doc: string;
+    peer_id: string;
+    timestamp: number;
+    eip_validation: boolean;
+    ts_validation: boolean;
+    signed_response: string;
+}
 
 // db handler
 export function get_db(db_path: any): sqlite.Database {
