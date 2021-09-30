@@ -5,6 +5,7 @@ import * as sqlite from 'sqlite3';
 const sqlite3 = sqlite.verbose();
 import { Response } from './eip_processor';
 
+const DB_PATH = './data/snapshot.db';
 
 export interface DBRecord {
     snapshot_id: number;
@@ -19,7 +20,7 @@ export interface DBRecord {
 }
 
 // db handler
-export function get_db(db_path: any): sqlite.Database {
+export function get_db(db_path: string): sqlite.Database {
     var db_path = db_path;
 
     if (db_path === null) {
@@ -83,6 +84,45 @@ export function insert_event(db: any, eip_obj: any, response_obj: Response, sign
         // console.log(`A row has been inserted with row id: ${db.}`);
     });
     cursor.finalize();
+}
+
+
+// export function select_event(snapshot_id: number): DBRecord {
+export function select_event(snapshot_id: number): any {
+    // todo: adding request log
+    var db = get_db(DB_PATH);
+    const stmt = 'select * from from snapshot where snapshot_id=?'
+    db.get(stmt, [snapshot_id], (err, row) => {
+        db.close();
+        if (err) {
+            return console.error(err.message);
+        }
+        return row
+            ? console.log(row)
+            : console.log(`No record found for snapshot id: ${snapshot_id}`);
+    });
+    // db.close();
+};
+
+// export function select_events(): Array<DBRecord> {
+export function select_events(): any {
+    var db = get_db(DB_PATH);
+    // todo: add pagination
+    const stmt = 'select * from from snapshot limit ?';
+    var response_arr: Array<DBRecord>;
+    db.all(stmt, [100], (err, rows) => {
+        if (err) {
+            // todo: no good, change that.
+            return [];
+        }
+        for (var row of rows) {
+            const _row: DBRecord = row;
+            response_arr.push(_row);
+        };
+        return response_arr;
+    });
+
+    db.close();
 }
 
 

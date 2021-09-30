@@ -8,18 +8,17 @@ data DBResponse:
     snapshot_id: u64
 
 service ProVoValidation("eip_validation"):
-    eip_validation(eip_str: string, peer_id: string)
+    eip712_validation(eip_str: string, peer_id: string) -> PVResponse
 
 service DataProvider(""):
-    get_records()
-    get_record(snapshot_id: u64)
+    get_records() -> []DBResponse
+    get_record(snapshot_id: u64) -> DBResponse
 
 
-func validate(relay: string, peer:string, eip712_json: string) -> PVResponse {
+func validate(relay: string, peer:string, eip712_json: string) -> PVResponse:
     on peer via relay:
-        result <- ProVoValidation.eip_validation(eip712_json, peer)        
+        result <- ProVoValidation.eip712_validation(eip712_json, peer)        
     <- result
-}
 
 
 func get_record(relay:string, peer:string, snapshot_id: u64) -> DBResponse:
