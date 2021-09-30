@@ -7,6 +7,7 @@ import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequenc
 import { eip_validation, Response } from "./eip_processor";
 import { get_db, create_table, insert_event } from './local_db';
 
+var sqlite3 = require('sqlite3').verbose();
 
 
 
@@ -50,12 +51,14 @@ async function main() {
 
   // return (resp_str, signed_response);
 
-  var db = await get_db(DB_PATH);
-  await create_table(db);
-  await insert_event(db, JSON.parse(eip712_doc), response, signed_response);
+  var db = get_db(DB_PATH);
+  const _table = await create_table(db);
+  console.log(_table);
 
+  const _insert = insert_event(db, JSON.parse(eip712_doc), response, signed_response);
+  console.log(_insert);
 
-  db.close();
+  // db.close();
 }
 
 main();
