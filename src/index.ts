@@ -1,10 +1,10 @@
 import { Fluence } from "@fluencelabs/fluence";
 import { krasnodar } from "@fluencelabs/fluence-network-environment";
-import { registerProVoValidation, ProVoValidationDef } from "./_aqua/snapshot";
+import { registerProVoValidation, ProVoValidationDef, registerDataProvider, DataProviderDef } from "./_aqua/snapshot";
 import { ethers } from "ethers";
 import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequence/ethers-eip712
 import { eip_validation, Response } from "./eip_processor";
-import { get_db, create_table, insert_event, DBRecord } from './local_db';
+import { get_db, create_table, insert_event, DBRecord, select_events, select_event } from './local_db';
 
 
 function create_wallet(): ethers.Wallet {
@@ -36,17 +36,16 @@ class EIPValidator implements ProVoValidationDef {
   }
 }
 
-class EIPValidator implements ProVoValidationDef {
+class DataProvider implements DataProviderDef {
 
-  get_record() {
+  get_record(snapshot_id: number) {
     // todo: add pagination
-
-
+    return select_event(snapshot_id);
 
   }
 
-  get_records(snapshot_id) {
-
+  get_records() {
+    return select_events();
   }
 }
 
@@ -59,7 +58,7 @@ async function main() {
   });
 
   registerProVoValidation(new EIPValidator());
-
+  registerDataProvider(new DataProvider);
 
   await Fluence.stop();
 

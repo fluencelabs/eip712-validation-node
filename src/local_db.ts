@@ -111,6 +111,7 @@ export function select_events(): any {
     const stmt = 'select * from from snapshot limit ?';
     var response_arr: Array<DBRecord>;
     db.all(stmt, [100], (err, rows) => {
+        db.close();
         if (err) {
             // todo: no good, change that.
             return [];
@@ -122,7 +123,7 @@ export function select_events(): any {
         return response_arr;
     });
 
-    db.close();
+    // db.close();
 }
 
 
