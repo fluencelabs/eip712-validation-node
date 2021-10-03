@@ -31,7 +31,6 @@ function check_signature(eip_obj: any): boolean {
 
     // there may be an upper/lowercase hex difference
     const sig_assert = (signing_addr == eip_obj.address);
-    console.log("sig assert: ", sig_assert);
     return sig_assert;
 }
 
@@ -41,7 +40,7 @@ export function eip_validation(eip_str: string, peer_id: string): Response {
 
     const eip_obj = JSON.parse(eip_str);
 
-    // verify eip document integrity -- not working
+    // verify eip document integrity -- not working due to missing fields
     // const digest = TypedDataUtils.encodeDigest(eip_obj.data);
     // const digest_hex = ethers.utils.hexlify(digest);
 

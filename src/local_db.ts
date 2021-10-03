@@ -37,9 +37,10 @@ export function get_db(db_path: string): sqlite.Database {
 
 }
 
+
 export async function create_table(db: sqlite.Database) {
     const stmt = `create table if not exists snapshot (
-        snapshot_id integer primary key,
+        snapshot_id integer unique,
         event_address text,
         event_signature text,
         eip712_doc blob,
@@ -51,7 +52,7 @@ export async function create_table(db: sqlite.Database) {
     )`;
 
     let promise = new Promise<void>((resolve, reject) => db.run(stmt, (res: sqlite.RunResult, err: Error) => {
-        console.dir(res);
+        // console.dir(res);
         if (err !== null) {
             resolve()
         } else {
@@ -60,30 +61,21 @@ export async function create_table(db: sqlite.Database) {
     }));
 
     return promise;
-
-    db.run(stmt);
 }
 
-
-export function insert_event(db: any, eip_obj: any, response_obj: Response, signed_msg: string) {
-    const stmt = `insert into snapshot values (?,?,?,?,?,?,?,?,?)`;
-    // const stmt = `insert into snapshot values (?)`;
-    var cursor = db.prepare(stmt);
-
-    var vals = [eip_obj.data.message.snapshot, eip_obj.address, eip_obj.sig, JSON.stringify(eip_obj.data), response_obj.peer_id, response_obj.timestamp, response_obj.eip_validation, response_obj.ts_validation, signed_msg];
-    // var vals = [1];
-    for (let v of vals) {
-        console.log(typeof (v));
-    }
-
-    cursor.run(stmt, vals, function (err: any) {
-        if (err) {
-            return console.log("insert error: ", err.message);
+export async function insert_event(db: any, eip_obj: any, response_obj: Response, signed_msg: string) {
+    const stmt = `insert into snapshot values (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    var ins_vals = [eip_obj.data.message.snapshot, eip_obj.address, eip_obj.sig, JSON.stringify(eip_obj.data), response_obj.peer_id, response_obj.timestamp, response_obj.eip_validation, response_obj.ts_validation, signed_msg];
+    let promise = new Promise<void>((resolve, reject) => db.run(stmt, ins_vals, (res: sqlite.RunResult, err: Error) => {
+        // console.dir(res);
+        if (err !== null) {
+            resolve()
+        } else {
+            reject(err)
         }
-        // console.log(`A row has been inserted with row id: ${this.lastID}`);
-        // console.log(`A row has been inserted with row id: ${db.}`);
-    });
-    cursor.finalize();
+    }));
+
+    return promise;
 }
 
 
@@ -91,7 +83,7 @@ export function insert_event(db: any, eip_obj: any, response_obj: Response, sign
 export function select_event(snapshot_id: number): any {
     // todo: adding request log
     var db = get_db(DB_PATH);
-    const stmt = 'select * from from snapshot where snapshot_id=?'
+    const stmt = 'select * from snapshot where snapshot_id=?'
     db.get(stmt, [snapshot_id], (err, row) => {
         db.close();
         if (err) {
@@ -108,17 +100,20 @@ export function select_event(snapshot_id: number): any {
 export function select_events(): any {
     var db = get_db(DB_PATH);
     // todo: add pagination
-    const stmt = 'select * from from snapshot limit ?';
+    const stmt = 'select * from snapshot limit ?';
+    console.log("select events stmt: ", stmt);
     var response_arr: Array<DBRecord>;
     db.all(stmt, [100], (err, rows) => {
-        db.close();
+        // db.close();
         if (err) {
             // todo: no good, change that.
+            console.error(err.message);
             return [];
         }
         for (var row of rows) {
             const _row: DBRecord = row;
-            response_arr.push(_row);
+            console.log("row: ", row);
+            // response_arr.push(_row);
         };
         return response_arr;
     });
