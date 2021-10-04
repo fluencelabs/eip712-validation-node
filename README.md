@@ -73,21 +73,23 @@ TODO:
 
 ## Running A Peer
 
-Install the Node dependencies and start the peer:
+Install the Node dependencies and start the peer in the `` directory:
 
 ```bash
 npm i
 npm start
 ```
 
-With the node up and running, we can access the validation and query capabilities with Aqua initiated from any other (client) peer including a browser. The currently exposes two validation methods:
+Or run with:
 
-* ... and
-* ...
-  
-  with the difference being that ... takes a ....
+```bash
+nohup node start &
+```
 
-  the corresponding Aqua are:
+for a long-running daemon.
 
-  * ... ad
-  * ... respectively.
+With the node up and running, we can access the validation and query capabilities with Aqua initiated from any other (client) peer including a browser. We can currently call the validation process from [Aqua](./aqua/snapshot.aqua) with two methods: `validate` and `validate_from_url` with the former accepting a json string and the later the url to a json body.
+
+Using the command line utility [`fldist`]("https://doc.fluence.dev/docs/knowledge_tools"), for example, we can run:
+
+TBD
