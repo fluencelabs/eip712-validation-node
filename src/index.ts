@@ -77,7 +77,7 @@ class DataProvider implements DataProviderDef {
 }
 
 
-async function main_1() {
+async function main_0() {
 
   await Fluence.start({
     connectTo: krasnodar[0],
@@ -174,23 +174,20 @@ async function main() {
   console.log("\n\n");
 
   let peer = Fluence.getPeer();
-  console.log(peer);
+  // console.log(peer);
   // console.log(Fluence.KeyPair);
 
-  /*
+
 
   registerProVoValidation(new EIPValidator());
   registerDataProvider(new DataProvider);
 
   const eip_doc: any = await got('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS').json();
-  // console.log("eip json obj: ", eip_doc);
+  console.log("eip json obj: ", eip_doc);
 
   let obj = new EIPValidator();
-  console.log("class obj: ", obj);
-  console.dir(obj);
   let result = obj.eip712_validation_url(JSON.stringify(eip_doc));
-  */
-
+  console.log("result: ", result);
   await Fluence.stop();
 }
 
