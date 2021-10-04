@@ -39,6 +39,7 @@ function check_signature(eip_obj: any): boolean {
 export function eip_validation(eip_str: string, peer_id: string): Response {
 
     const eip_obj = JSON.parse(eip_str);
+    console.log("eip doc parsed: ", eip_obj);
 
     // verify eip document integrity -- not working due to missing fields
     // const digest = TypedDataUtils.encodeDigest(eip_obj.data);

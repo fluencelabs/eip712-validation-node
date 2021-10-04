@@ -1,4 +1,4 @@
-import { Fluence } from "@fluencelabs/fluence";
+import { Fluence, KeyPair } from "@fluencelabs/fluence";
 import { krasnodar } from "@fluencelabs/fluence-network-environment";
 import { registerProVoValidation, ProVoValidationDef, registerDataProvider, DataProviderDef } from "./_aqua/snapshot";
 import { ethers } from "ethers";
@@ -6,6 +6,7 @@ import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequenc
 import { eip_validation, Response } from "./eip_processor";
 import { get_db, create_table, insert_event, DBRecord, select_events, select_event } from './local_db';
 import got from 'got';
+
 
 
 function create_wallet(): ethers.Wallet {
@@ -18,7 +19,7 @@ function sign_response(wallet: ethers.Wallet, response: Response): Promise<strin
 }
 class EIPValidator implements ProVoValidationDef {
 
-  eip712_validation(eip712_json: string) {
+  eip712_validation_string(eip712_json: string): string {
     // todo: need to fix this to use local peer key
     const wallet = create_wallet();
     let response = eip_validation(eip712_json, wallet.address);
@@ -29,12 +30,37 @@ class EIPValidator implements ProVoValidationDef {
     const signed_response = wallet.signMessage(resp_str);
     console.log("signed response: ", signed_response);
 
-    // verify
+    // verify test
     // const address = ethers.utils.verifyMessage(resp_str, signed_response);
     // console.log("verify signature. peer_id: ", peer_id, " verified addr: ", address, " equal: ", peer_id === address);
-    console.log(resp_str);
-    return response; //, signed_response];
+
+    // console.log(resp_str);
+    let obj = { "signature": signed_response, "validation": response };
+    return JSON.stringify(obj);
   }
+
+  eip712_validation_url(eip712_url: string): string {
+
+    const eip_json: any = got('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS').json();
+
+    // todo: need to fix this to use local peer key
+    const wallet = create_wallet();
+    let response = eip_validation(eip_json, wallet.address);
+
+    const resp_str = JSON.stringify(response);
+    const signed_response = wallet.signMessage(resp_str);
+
+
+    // verify test
+    // const address = ethers.utils.verifyMessage(resp_str, signed_response);
+    // console.log("verify signature. peer_id: ", peer_id, " verified addr: ", address, " equal: ", peer_id === address);
+
+    // console.log(resp_str);
+
+    let obj = { "signature": signed_response, "validation": response };
+    return JSON.stringify(obj);
+  }
+
 }
 
 class DataProvider implements DataProviderDef {
@@ -75,7 +101,7 @@ async function main_1() {
 }
 
 
-async function main() {
+async function main_2() {
   /*
   const DB_PATH = './data/snapshot.db';
 
@@ -135,5 +161,37 @@ async function main() {
 
 }
 
+async function main() {
+
+  await Fluence.start({
+    connectTo: krasnodar[0],
+  });
+
+  console.dir(Fluence);
+  console.log("peer id : ", Fluence.getStatus().peerId);
+  console.log("relay id: ", Fluence.getStatus().relayPeerId);
+  console.log("status  : ", Fluence.getStatus());
+  console.log("\n\n");
+
+  let peer = Fluence.getPeer();
+  console.log(peer);
+  // console.log(Fluence.KeyPair);
+
+  /*
+
+  registerProVoValidation(new EIPValidator());
+  registerDataProvider(new DataProvider);
+
+  const eip_doc: any = await got('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS').json();
+  // console.log("eip json obj: ", eip_doc);
+
+  let obj = new EIPValidator();
+  console.log("class obj: ", obj);
+  console.dir(obj);
+  let result = obj.eip712_validation_url(JSON.stringify(eip_doc));
+  */
+
+  await Fluence.stop();
+}
 
 main();
