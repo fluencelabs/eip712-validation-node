@@ -19,7 +19,7 @@ function sign_response(wallet: ethers.Wallet, response: Response): Promise<strin
 }
 class EIPValidator implements ProVoValidationDef {
 
-  eip712_validation_string(eip712_json: string): string {
+  async eip712_validation_string(eip712_json: string): Promise<string> {
     // todo: need to fix this to use local peer key
     const wallet = create_wallet();
     let response = eip_validation(eip712_json, wallet.address);
@@ -27,7 +27,7 @@ class EIPValidator implements ProVoValidationDef {
     const resp_str = JSON.stringify(response);
     console.log("eip validation response: ", resp_str);
 
-    const signed_response = wallet.signMessage(resp_str);
+    const signed_response = await wallet.signMessage(resp_str);
     console.log("signed response: ", signed_response);
 
     // verify test
@@ -39,16 +39,17 @@ class EIPValidator implements ProVoValidationDef {
     return JSON.stringify(obj);
   }
 
-  eip712_validation_url(eip712_url: string): string {
+  async eip712_validation_url(eip712_url: string): Promise<string> {
 
-    const eip_json: any = got('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS').json();
+    const eip = await got.get('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS');
+    const eip_json = eip.body;
 
     // todo: need to fix this to use local peer key
     const wallet = create_wallet();
     let response = eip_validation(eip_json, wallet.address);
 
     const resp_str = JSON.stringify(response);
-    const signed_response = wallet.signMessage(resp_str);
+    const signed_response = await wallet.signMessage(resp_str);
 
 
     // verify test

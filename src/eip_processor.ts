@@ -38,6 +38,7 @@ function check_signature(eip_obj: any): boolean {
 // export async function eip_validation(eip_str: string, peer_id: string): Promise<Response> {
 export function eip_validation(eip_str: string, peer_id: string): Response {
 
+    console.log("eip_str", eip_str)
     const eip_obj = JSON.parse(eip_str);
     console.log("eip doc parsed: ", eip_obj);
 
