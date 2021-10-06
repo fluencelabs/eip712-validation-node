@@ -6,6 +6,7 @@ import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequenc
 import { eip_validation, Response } from "./eip_processor";
 import { get_db, create_table, insert_event, DBRecord, select_events, select_event } from './local_db';
 import got from 'got';
+import { base64 } from "ethers/lib/utils";
 
 
 
@@ -80,8 +81,12 @@ class DataProvider implements DataProviderDef {
 
 async function main_0() {
 
+  const skBase64 = 'z1x3cVXhk9nJKE1pZaX9KxccUBzxu3aGlaUjDdAB2oY=';
+  const skBytes = base64.decode(skBase64);
+
   await Fluence.start({
     connectTo: krasnodar[0],
+    KeyPair: await KeyPair.fromEd25519SK(skBytes)
   });
 
   // const peer_data = Fluence.getPeer();

@@ -20,6 +20,7 @@
     "@fluencelabs/fluence": "0.10.4-async-457.0",
     "@fluencelabs/fluence-network-environment": "1.0.10",
     "@types/sqlite3": "^3.1.7",
+    "base64-js": "^1.5.1",
     "ethers": "^5.4.7",
     "ethers-eip712": "^0.2.0",
     "got": "^11.8.2",
