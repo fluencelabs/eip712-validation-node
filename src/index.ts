@@ -81,13 +81,7 @@ class DataProvider implements DataProviderDef {
 
 async function main_0() {
 
-  const skBase64 = 'z1x3cVXhk9nJKE1pZaX9KxccUBzxu3aGlaUjDdAB2oY=';
-  const skBytes = base64.decode(skBase64);
-
-  await Fluence.start({
-    connectTo: krasnodar[0],
-    KeyPair: await KeyPair.fromEd25519SK(skBytes)
-  });
+  await startFluencePeer();
 
   // const peer_data = Fluence.getPeer();
   // console.log("client data\n: ", peer_data);
@@ -106,6 +100,16 @@ async function main_0() {
 
 }
 
+
+async function startFluencePeer() {
+  const skBase64 = 'z1x3cVXhk9nJKE1pZaX9KxccUBzxu3aGlaUjDdAB2oY=';
+  const skBytes = base64.decode(skBase64);
+
+  await Fluence.start({
+    connectTo: krasnodar[0],
+    KeyPair: await KeyPair.fromEd25519SK(skBytes)
+  });
+}
 
 async function main_2() {
   /*
@@ -168,10 +172,7 @@ async function main_2() {
 }
 
 async function main() {
-
-  await Fluence.start({
-    connectTo: krasnodar[0],
-  });
+  await startFluencePeer()
 
   console.dir(Fluence);
   console.log("peer id : ", Fluence.getStatus().peerId);
