@@ -30,7 +30,7 @@ The implemented peer exposes select interfaces to be used with Aqua and operates
 
 The PoC implementation does not provide integration with external Snapshot distributed persistence but allows for easy extension to incorporate exogenous storage solutions. The validation process, including not implemented checks, can be found in [eip_validation](./src/eip_processor.ts) and the local persistence in [local sqlite](./src/local_db.ts).
 
-In order to access the services with Aqua, please see [implementation](./aqua/snapshot.aqua), which can be fired from a Typescript client, another peer or the `fldist` command line tool. 
+In order to access the services with Aqua, please see [implementation](./aqua/snapshot.aqua), which can be fired from a Typescript client, another peer or the `fldist` command line tool.
 
 In addition, Aqua can be used to query a Peer's local database for already processed validations. This allows new peers, for example, to build up a local history of previously validated events, if so desired. Please note that a consensus algorithm should be implemented and used to manage the sync process. The query process is outlined in Figure 2 below and the Aqua queries are located in [snapshot aqua](./aqua/snapshot.aqua).
 

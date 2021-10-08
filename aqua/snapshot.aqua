@@ -7,11 +7,11 @@ data PVResponse:
 data DBResponse:
     snapshot_id: u64
 
-service ProVoValidation("eip_validation"):
+service ProVoValidation("snapshot"):
     eip712_validation_string(eip_str: string, peer_id: string) -> string
     eip712_validation_url(eip_str: string, peer_id: string) -> string
 
-service DataProvider(""):
+service DataProvider("snapshot"):
     get_records() -> []DBResponse
     get_record(snapshot_id: u64) -> DBResponse
 

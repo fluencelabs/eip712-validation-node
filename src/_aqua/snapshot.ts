@@ -85,7 +85,7 @@ export function registerProVoValidation(...args: any) {
   if (!!incorrectServiceDefinitions.length) {
     throw new Error(
       "Error registering service ProVoValidation: missing functions: " +
-        incorrectServiceDefinitions.map((d) => "'" + d + "'").join(", ")
+      incorrectServiceDefinitions.map((d) => "'" + d + "'").join(", ")
     );
   }
 
@@ -191,7 +191,7 @@ export function registerDataProvider(...args: any) {
   if (!!incorrectServiceDefinitions.length) {
     throw new Error(
       "Error registering service DataProvider: missing functions: " +
-        incorrectServiceDefinitions.map((d) => "'" + d + "'").join(", ")
+      incorrectServiceDefinitions.map((d) => "'" + d + "'").join(", ")
     );
   }
 
