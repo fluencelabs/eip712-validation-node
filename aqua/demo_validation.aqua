@@ -1,0 +1,32 @@
+data PVResponse:
+    peer_id: string
+    timestamp: u64
+    eip_validation: bool
+    ts_validation: bool
+
+data DBResponse:
+    snapshot_id: u64
+
+service ProVoValidation("EIPValidator"):
+    eip712_validation_string(eip_str: string, peer_id: string) -> string
+    eip712_validation_url(eip_str: string, peer_id: string) -> string
+
+service DataProvider("DataProvider"):
+    get_records() -> []DBResponse
+    get_record(snapshot_id: u64) -> DBResponse
+
+
+func validate(eip712_url: string, node: string, relay:string) -> string:
+    on node via relay:
+        res <- ProVoValidation.eip712_validation_url(eip712_url, node)
+    <- res
+
+func get_all_validations(node: string, relay:string) -> []DBResponse:
+    on node via relay:
+        res <- DataProvider.get_records()
+    <- res
+
+func get_validation(snapshot_id: u64, node: string, relay:string) -> DBResponse:
+    on node via relay:
+        res <- DataProvider.get_record(snapshot_id)
+    <- res

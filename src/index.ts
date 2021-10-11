@@ -71,12 +71,12 @@ class EIPValidator implements ProVoValidationDef {
 class DataProvider implements DataProviderDef {
 
   get_record(snapshot_id: number) {
-    // todo: add pagination
     return select_event(snapshot_id);
 
   }
 
   get_records() {
+    // todo: add pagination
     return select_events();
   }
 }
@@ -108,8 +108,8 @@ async function main() {
   // console.log(peer);
   // console.log(Fluence.KeyPair);
 
-  registerProVoValidation(new EIPValidator());
-  registerDataProvider(new DataProvider);
+  registerProVoValidation("EIPValidator", new EIPValidator());
+  registerDataProvider("DataProvider", new DataProvider);
 
   // const eip_doc: any = await got('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS').json();
   // console.log("eip json obj: ", eip_doc);
