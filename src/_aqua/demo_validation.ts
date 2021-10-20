@@ -20,12 +20,12 @@ export interface ProVoValidationDef {
     eip_str: string,
     peer_id: string,
     callParams: CallParams<"eip_str" | "peer_id">
-  ) => string | Promise<string>;
+  ) => string;
   eip712_validation_url: (
     eip_str: string,
     peer_id: string,
     callParams: CallParams<"eip_str" | "peer_id">
-  ) => string | Promise<string>;
+  ) => string;
 }
 export function registerProVoValidation(service: ProVoValidationDef): void;
 export function registerProVoValidation(
@@ -44,7 +44,7 @@ export function registerProVoValidation(
 
 export function registerProVoValidation(...args: any) {
   registerService(args, {
-    defaultServiceId: "snapshot",
+    defaultServiceId: "EIPValidator",
     functions: [
       {
         functionName: "eip712_validation_string",
@@ -114,7 +114,7 @@ export function registerDataProvider(
 
 export function registerDataProvider(...args: any) {
   registerService(args, {
-    defaultServiceId: "snapshot",
+    defaultServiceId: "DataProvider",
     functions: [
       {
         functionName: "get_record",
@@ -144,16 +144,16 @@ export function registerDataProvider(...args: any) {
 // Functions
 
 export function validate(
+  eip712_url: string,
+  node: string,
   relay: string,
-  peer_: string,
-  eip712_json: string,
   config?: { ttl?: number }
 ): Promise<string>;
 export function validate(
   peer: FluencePeer,
+  eip712_url: string,
+  node: string,
   relay: string,
-  peer_: string,
-  eip712_json: string,
   config?: { ttl?: number }
 ): Promise<string>;
 export function validate(...args: any) {
@@ -169,18 +169,18 @@ export function validate(...args: any) {
                             (seq
                              (seq
                               (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                              (call %init_peer_id% ("getDataSrv" "relay") [] relay)
+                              (call %init_peer_id% ("getDataSrv" "eip712_url") [] eip712_url)
                              )
-                             (call %init_peer_id% ("getDataSrv" "peer") [] peer)
+                             (call %init_peer_id% ("getDataSrv" "node") [] node)
                             )
-                            (call %init_peer_id% ("getDataSrv" "eip712_json") [] eip712_json)
+                            (call %init_peer_id% ("getDataSrv" "relay") [] relay)
                            )
                            (call -relay- ("op" "noop") [])
                           )
                           (call relay ("op" "noop") [])
                          )
                          (xor
-                          (call peer ("snapshot" "eip712_validation_string") [eip712_json peer] result)
+                          (call node ("EIPValidator" "eip712_validation_url") [eip712_url node] res)
                           (seq
                            (seq
                             (seq
@@ -198,7 +198,7 @@ export function validate(...args: any) {
                        (call -relay- ("op" "noop") [])
                       )
                       (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [result])
+                       (call %init_peer_id% ("callbackSrv" "response") [res])
                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
@@ -214,230 +214,23 @@ export function validate(...args: any) {
       },
       argDefs: [
         {
-          name: "relay",
-          argType: {
-            tag: "primitive",
-          },
-        },
-        {
-          name: "peer",
-          argType: {
-            tag: "primitive",
-          },
-        },
-        {
-          name: "eip712_json",
-          argType: {
-            tag: "primitive",
-          },
-        },
-      ],
-      names: {
-        relay: "-relay-",
-        getDataSrv: "getDataSrv",
-        callbackSrv: "callbackSrv",
-        responseSrv: "callbackSrv",
-        responseFnName: "response",
-        errorHandlingSrv: "errorHandlingSrv",
-        errorFnName: "error",
-      },
-    },
-    script
-  );
-}
-
-export function validate_from_url(
-  relay: string,
-  peer_: string,
-  eip712_url: string,
-  config?: { ttl?: number }
-): Promise<string>;
-export function validate_from_url(
-  peer: FluencePeer,
-  relay: string,
-  peer_: string,
-  eip712_url: string,
-  config?: { ttl?: number }
-): Promise<string>;
-export function validate_from_url(...args: any) {
-  let script = `
-                        (xor
-                     (seq
-                      (seq
-                       (seq
-                        (seq
-                         (seq
-                          (seq
-                           (seq
-                            (seq
-                             (seq
-                              (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                              (call %init_peer_id% ("getDataSrv" "relay") [] relay)
-                             )
-                             (call %init_peer_id% ("getDataSrv" "peer") [] peer)
-                            )
-                            (call %init_peer_id% ("getDataSrv" "eip712_url") [] eip712_url)
-                           )
-                           (call -relay- ("op" "noop") [])
-                          )
-                          (call relay ("op" "noop") [])
-                         )
-                         (xor
-                          (call peer ("snapshot" "eip712_validation_url") [eip712_url peer] result)
-                          (seq
-                           (seq
-                            (seq
-                             (call relay ("op" "noop") [])
-                             (call -relay- ("op" "noop") [])
-                            )
-                            (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                           )
-                           (call -relay- ("op" "noop") [])
-                          )
-                         )
-                        )
-                        (call relay ("op" "noop") [])
-                       )
-                       (call -relay- ("op" "noop") [])
-                      )
-                      (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [result])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
-                      )
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
-                    )
-    `;
-  return callFunction(
-    args,
-    {
-      functionName: "validate_from_url",
-      returnType: {
-        tag: "primitive",
-      },
-      argDefs: [
-        {
-          name: "relay",
-          argType: {
-            tag: "primitive",
-          },
-        },
-        {
-          name: "peer",
-          argType: {
-            tag: "primitive",
-          },
-        },
-        {
           name: "eip712_url",
           argType: {
             tag: "primitive",
           },
         },
-      ],
-      names: {
-        relay: "-relay-",
-        getDataSrv: "getDataSrv",
-        callbackSrv: "callbackSrv",
-        responseSrv: "callbackSrv",
-        responseFnName: "response",
-        errorHandlingSrv: "errorHandlingSrv",
-        errorFnName: "error",
-      },
-    },
-    script
-  );
-}
-
-export type Get_recordResult = { snapshot_id: number };
-export function get_record(
-  relay: string,
-  peer_: string,
-  snapshot_id: number,
-  config?: { ttl?: number }
-): Promise<Get_recordResult>;
-export function get_record(
-  peer: FluencePeer,
-  relay: string,
-  peer_: string,
-  snapshot_id: number,
-  config?: { ttl?: number }
-): Promise<Get_recordResult>;
-export function get_record(...args: any) {
-  let script = `
-                        (xor
-                     (seq
-                      (seq
-                       (seq
-                        (seq
-                         (seq
-                          (seq
-                           (seq
-                            (seq
-                             (seq
-                              (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                              (call %init_peer_id% ("getDataSrv" "relay") [] relay)
-                             )
-                             (call %init_peer_id% ("getDataSrv" "peer") [] peer)
-                            )
-                            (call %init_peer_id% ("getDataSrv" "snapshot_id") [] snapshot_id)
-                           )
-                           (call -relay- ("op" "noop") [])
-                          )
-                          (call relay ("op" "noop") [])
-                         )
-                         (xor
-                          (call peer ("snapshot" "get_record") [snapshot_id] result)
-                          (seq
-                           (seq
-                            (seq
-                             (call relay ("op" "noop") [])
-                             (call -relay- ("op" "noop") [])
-                            )
-                            (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                           )
-                           (call -relay- ("op" "noop") [])
-                          )
-                         )
-                        )
-                        (call relay ("op" "noop") [])
-                       )
-                       (call -relay- ("op" "noop") [])
-                      )
-                      (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [result])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
-                      )
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
-                    )
-    `;
-  return callFunction(
-    args,
-    {
-      functionName: "get_record",
-      returnType: {
-        tag: "primitive",
-      },
-      argDefs: [
+        {
+          name: "node",
+          argType: {
+            tag: "primitive",
+          },
+        },
         {
           name: "relay",
           argType: {
             tag: "primitive",
           },
         },
-        {
-          name: "peer",
-          argType: {
-            tag: "primitive",
-          },
-        },
-        {
-          name: "snapshot_id",
-          argType: {
-            tag: "primitive",
-          },
-        },
       ],
       names: {
         relay: "-relay-",
@@ -453,18 +246,18 @@ export function get_record(...args: any) {
   );
 }
 
-export function get_records(
+export function get_all_validations(
+  node: string,
   relay: string,
-  peer_: string,
   config?: { ttl?: number }
 ): Promise<{ snapshot_id: number }[]>;
-export function get_records(
+export function get_all_validations(
   peer: FluencePeer,
+  node: string,
   relay: string,
-  peer_: string,
   config?: { ttl?: number }
 ): Promise<{ snapshot_id: number }[]>;
-export function get_records(...args: any) {
+export function get_all_validations(...args: any) {
   let script = `
                         (xor
                      (seq
@@ -476,16 +269,16 @@ export function get_records(...args: any) {
                            (seq
                             (seq
                              (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                             (call %init_peer_id% ("getDataSrv" "relay") [] relay)
+                             (call %init_peer_id% ("getDataSrv" "node") [] node)
                             )
-                            (call %init_peer_id% ("getDataSrv" "peer") [] peer)
+                            (call %init_peer_id% ("getDataSrv" "relay") [] relay)
                            )
                            (call -relay- ("op" "noop") [])
                           )
                           (call relay ("op" "noop") [])
                          )
                          (xor
-                          (call peer ("snapshot" "get_records") [] result)
+                          (call node ("DataProvider" "get_records") [] res)
                           (seq
                            (seq
                             (seq
@@ -503,7 +296,7 @@ export function get_records(...args: any) {
                        (call -relay- ("op" "noop") [])
                       )
                       (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [result])
+                       (call %init_peer_id% ("callbackSrv" "response") [res])
                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
@@ -513,19 +306,123 @@ export function get_records(...args: any) {
   return callFunction(
     args,
     {
-      functionName: "get_records",
+      functionName: "get_all_validations",
       returnType: {
         tag: "primitive",
       },
       argDefs: [
+        {
+          name: "node",
+          argType: {
+            tag: "primitive",
+          },
+        },
         {
           name: "relay",
           argType: {
             tag: "primitive",
           },
         },
+      ],
+      names: {
+        relay: "-relay-",
+        getDataSrv: "getDataSrv",
+        callbackSrv: "callbackSrv",
+        responseSrv: "callbackSrv",
+        responseFnName: "response",
+        errorHandlingSrv: "errorHandlingSrv",
+        errorFnName: "error",
+      },
+    },
+    script
+  );
+}
+
+export type Get_validationResult = { snapshot_id: number };
+export function get_validation(
+  snapshot_id: number,
+  node: string,
+  relay: string,
+  config?: { ttl?: number }
+): Promise<Get_validationResult>;
+export function get_validation(
+  peer: FluencePeer,
+  snapshot_id: number,
+  node: string,
+  relay: string,
+  config?: { ttl?: number }
+): Promise<Get_validationResult>;
+export function get_validation(...args: any) {
+  let script = `
+                        (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (seq
+                             (seq
+                              (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                              (call %init_peer_id% ("getDataSrv" "snapshot_id") [] snapshot_id)
+                             )
+                             (call %init_peer_id% ("getDataSrv" "node") [] node)
+                            )
+                            (call %init_peer_id% ("getDataSrv" "relay") [] relay)
+                           )
+                           (call -relay- ("op" "noop") [])
+                          )
+                          (call relay ("op" "noop") [])
+                         )
+                         (xor
+                          (call node ("DataProvider" "get_record") [snapshot_id] res)
+                          (seq
+                           (seq
+                            (seq
+                             (call relay ("op" "noop") [])
+                             (call -relay- ("op" "noop") [])
+                            )
+                            (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                           )
+                           (call -relay- ("op" "noop") [])
+                          )
+                         )
+                        )
+                        (call relay ("op" "noop") [])
+                       )
+                       (call -relay- ("op" "noop") [])
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [res])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `;
+  return callFunction(
+    args,
+    {
+      functionName: "get_validation",
+      returnType: {
+        tag: "primitive",
+      },
+      argDefs: [
         {
-          name: "peer",
+          name: "snapshot_id",
+          argType: {
+            tag: "primitive",
+          },
+        },
+        {
+          name: "node",
+          argType: {
+            tag: "primitive",
+          },
+        },
+        {
+          name: "relay",
           argType: {
             tag: "primitive",
           },

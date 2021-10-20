@@ -19,8 +19,8 @@ import { krasnodar } from "@fluencelabs/fluence-network-environment";
 import { validate } from "./_aqua/demo_validation";
 
 
-const NODE_ID: string = "12D3KooWSD5PToNiLQwKDXsu8JSysCwUt8BVUJEqCHcDe7P5h45e";
-const RELAY_ID: string = "12D3KooWSD5PToNiLQwKDXsu8JSysCwUt8BVUJEqCHcDe7P5h45e";
+const NODE_ID: string = "12D3KooWFCY8xqebtZqNeiA5took71bUNAedzCCDuCuM1QTdTbWT";
+const RELAY_ID: string = krasnodar[0].peerId;
 const EIP_URL: string = "https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS";
 
 async function main() {
@@ -42,6 +42,6 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error(error);
+    console.error('something went wrong: ', error);
     process.exit(1);
   });
