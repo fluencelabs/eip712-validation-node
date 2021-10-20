@@ -67,8 +67,8 @@ The peer-local SQLite table is [implemented](./src/local_db.ts) as:
 
 TODO:
 
-[ ] Change wallet to use Peer secret key
-[ ] Save Keypair to password protected (local) file
+- [x] Change wallet to use Peer secret key
+- [ ] Save Keypair to password protected (local) file
 
 
 ## Running A Peer
@@ -80,7 +80,7 @@ npm i
 npm start
 ```
 
-Or run with:
+Or run with
 
 ```bash
 nohup node start &
