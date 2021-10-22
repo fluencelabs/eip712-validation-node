@@ -63,7 +63,7 @@ export async function create_table(db: sqlite.Database) {
     return promise;
 }
 
-export async function insert_event(db: any, eip_obj: any, response_obj: Response, signed_msg: string) {
+export async function insert_event(db: sqlite.Database, eip_obj: any, response_obj: Response, signed_msg: string) {
     const stmt = `insert into snapshot values (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     var ins_vals = [eip_obj.data.message.snapshot, eip_obj.address, eip_obj.sig, JSON.stringify(eip_obj.data), response_obj.peer_id, response_obj.timestamp, response_obj.eip_validation, response_obj.ts_validation, signed_msg];
     let promise = new Promise<void>((resolve, reject) => db.run(stmt, ins_vals, (res: sqlite.RunResult, err: Error) => {
@@ -93,7 +93,7 @@ export function select_event(snapshot_id: number): any {
             ? console.log(row)
             : console.log(`No record found for snapshot id: ${snapshot_id}`);
     });
-    // db.close();
+    db.close();
 };
 
 // export function select_events(): Array<DBRecord> {
@@ -102,23 +102,28 @@ export function select_events(): any {
     // todo: add pagination
     const stmt = 'select * from snapshot limit ?';
     console.log("select events stmt: ", stmt);
-    var response_arr: Array<DBRecord>;
-    db.all(stmt, [100], (err, rows) => {
-        // db.close();
+    var response_arr = new Array<DBRecord>();
+    const select = db.all(stmt, [100], (err, rows) => {
+        console.log("number of rows: ", rows.length);
         if (err) {
             // todo: no good, change that.
             console.error(err.message);
             return [];
         }
-        for (var row of rows) {
-            const _row: DBRecord = row;
-            console.log("row: ", row);
-            // response_arr.push(_row);
-        };
-        return response_arr;
-    });
+        else {
+            for (var row of rows) {
+                const _row: DBRecord = row;
+                response_arr.push(_row);
 
+            };
+            console.log("len resp array in db all: ", response_arr.length);
+            return response_arr;
+        }
+    });
+    // console.log("select: ", select);
     // db.close();
+    // console.log("len resp array out of db all: ", response_arr);
+    // return response_arr;
 }
 
 

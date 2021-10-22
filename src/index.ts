@@ -12,6 +12,7 @@ import { base64 } from "ethers/lib/utils";
 // Arbitrary secret key that could be read from file, CLI arg or db
 // We derive both the PeerId and the (ethers) wallet from this key
 const SecretKey = "0x0123456789012345678901234567890123456789012345678901234567890123";
+const DB_PATH = "./data/snapshot.db";
 
 
 function create_wallet(sk: string): ethers.Wallet {
@@ -41,6 +42,7 @@ class EIPValidator implements ProVoValidationDef {
 
     // console.log(resp_str);
     let obj = { "signature": signed_response, "validation": response };
+
     return JSON.stringify(obj);
   }
 
@@ -64,6 +66,12 @@ class EIPValidator implements ProVoValidationDef {
     // console.log(resp_str);
 
     let obj = { "signature": signed_response, "validation": response };
+
+    // commit to local sqlite
+    let db = get_db(DB_PATH);
+    await create_table(db);
+    await insert_event(db, JSON.parse(eip_json), response, signed_response);
+
     return JSON.stringify(obj);
   }
 
@@ -75,9 +83,11 @@ class DataProvider implements DataProviderDef {
 
   }
 
-  get_records() {
+  async get_records(): Promise<any> {
     // todo: add pagination
-    return select_events();
+    const result = await select_events();
+    console.log("get records: ", result);
+    return result;
   }
 }
 
@@ -96,7 +106,7 @@ async function main() {
   console.log("wallet pk: ", wallet.publicKey);
 
   const skBytes: Uint8Array = ethers.utils.arrayify(SecretKey);
-  console.log("arraify: ", skBytes);
+  console.log("arrayify: ", skBytes);
 
   await startFluencePeer(skBytes);
 
