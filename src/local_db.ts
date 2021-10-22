@@ -97,7 +97,7 @@ export function select_event(snapshot_id: number): any {
 };
 
 // export function select_events(): Array<DBRecord> {
-export function select_events(): any {
+export async function select_events(): Promise<any> {
     var db = get_db(DB_PATH);
     // todo: add pagination
     const stmt = 'select * from snapshot limit ?';
