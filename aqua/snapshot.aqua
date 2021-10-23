@@ -4,36 +4,49 @@ data PVResponse:
     eip_validation: bool
     ts_validation: bool
 
-data DBResponse:
-    snapshot_id: u64
 
-service ProVoValidation("snapshot"):
+data DBRecord:
+    snapshot_id: u64
+    event_address: string
+    event_signature: string
+    eip712_doc: string
+    peer_id: string
+    timestamp: u64
+    eip_validation: bool
+    ts_validation: bool
+    signed_response: string
+
+data DBResult:
+    stderr: string
+    stdout: []DBRecord
+
+service EIPValidator("snapshot"):
     eip712_validation_string(eip_str: string, peer_id: string) -> string
     eip712_validation_url(eip_str: string, peer_id: string) -> string
 
 service DataProvider("snapshot"):
-    get_records() -> []DBResponse
-    get_record(snapshot_id: u64) -> DBResponse
+    get_records() -> DBResult
+    get_record(snapshot_id: u64) -> DBResult
 
 
 func validate(relay: string, peer:string, eip712_json: string) -> string:
     on peer via relay:
-        result <- ProVoValidation.eip712_validation_string(eip712_json, peer)        
+        result <- EIPValidator.eip712_validation_string(eip712_json, peer)        
     <- result
 
 func validate_from_url(relay: string, peer:string, eip712_url: string) -> string:
     on peer via relay:
-        result <- ProVoValidation.eip712_validation_url(eip712_url, peer)        
+        result <- EIPValidator.eip712_validation_url(eip712_url, peer)        
     <- result
 
 
-func get_record(relay:string, peer:string, snapshot_id: u64) -> DBResponse:
+func get_record(relay:string, peer:string, snapshot_id: u64) -> DBResult:
     on peer via relay:
         result <- DataProvider.get_record(snapshot_id)
     <- result
 
 
-func get_records(relay:string, peer:string) -> []DBResponse:
+func get_records(relay:string, peer:string) -> DBResult:
     on peer via relay:
         result <- DataProvider.get_records()
     <- result
