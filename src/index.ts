@@ -1,10 +1,10 @@
 import { Fluence, KeyPair } from "@fluencelabs/fluence";
 import { krasnodar } from "@fluencelabs/fluence-network-environment";
-import { registerProVoValidation, ProVoValidationDef, registerDataProvider, DataProviderDef } from "./_aqua/snapshot";
+import { registerEIPValidator, EIPValidatorDef, registerDataProvider, DataProviderDef } from "./_aqua/snapshot";
 import { ethers } from "ethers";
 import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequence/ethers-eip712
 import { eip_validation, Response } from "./eip_processor";
-import { get_db, create_table, insert_event, DBRecord, select_events, select_event } from './local_db';
+import { get_db, create_table, insert_event, DBRecord, DBResult, select_events, select_event } from './local_db';
 import got from 'got';
 import { base64 } from "ethers/lib/utils";
 
@@ -23,7 +23,9 @@ function sign_response(wallet: ethers.Wallet, response: Response): Promise<strin
   const signed_msg = wallet.signMessage(JSON.stringify(response));
   return signed_msg;
 }
-class EIPValidator implements ProVoValidationDef {
+
+// class exposed as service `EIPValidation` in snapshot.aqua
+class EIPValidator implements EIPValidatorDef {
 
   async eip712_validation_string(eip712_json: string): Promise<string> {
     // todo: need to fix this to use local peer key
@@ -76,9 +78,10 @@ class EIPValidator implements ProVoValidationDef {
   }
 
 }
+// class exposed as service `DataProviderDef` in snapshot.aqua
 class DataProvider implements DataProviderDef {
 
-  get_record(snapshot_id: number) {
+  async get_record(snapshot_id: number): Promise<any> {
     return select_event(snapshot_id);
 
   }
@@ -118,7 +121,7 @@ async function main() {
   // console.log(peer);
   // console.log(Fluence.KeyPair);
 
-  registerProVoValidation("EIPValidator", new EIPValidator());
+  registerEIPValidator("EIPValidator", new EIPValidator());
   registerDataProvider("DataProvider", new DataProvider);
 
   // const eip_doc: any = await got('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS').json();
