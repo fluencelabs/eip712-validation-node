@@ -1,6 +1,8 @@
 // import { sqlite3, open } from 'sqlite3';
 // var sqlite3 = require("sqlite3").verbose();
 // import "sqlite3";
+import { resolveProperties } from '@ethersproject/properties';
+import { ResultCodes } from '@fluencelabs/fluence/dist/internal/commonTypes';
 import * as sqlite from 'sqlite3';
 const sqlite3 = sqlite.verbose();
 import { Response } from './eip_processor';
@@ -17,6 +19,11 @@ export interface DBRecord {
     eip_validation: boolean;
     ts_validation: boolean;
     signed_response: string;
+}
+
+export interface DBResult {
+    stderr: string;
+    stdout: Array<DBRecord>
 }
 
 // db handler
@@ -78,72 +85,50 @@ export async function insert_event(db: sqlite.Database, eip_obj: any, response_o
     return promise;
 }
 
-
-// export function select_event(snapshot_id: number): DBRecord {
-export function select_event(snapshot_id: number): any {
-    // todo: adding request log
+export async function select_event(snapshot_id: number): Promise<DBResult> {
     var db = get_db(DB_PATH);
+    let result: DBResult = {} as DBResult;
     const stmt = 'select * from snapshot where snapshot_id=?'
-    db.get(stmt, [snapshot_id], (err, row) => {
-        db.close();
-        if (err) {
-            return console.error(err.message);
-        }
-        return row
-            ? console.log(row)
-            : console.log(`No record found for snapshot id: ${snapshot_id}`);
+    return new Promise((resolve) => {
+        db.get(stmt, [snapshot_id], (err, row) => {
+            db.close();
+            if (err) {
+                result.stderr = err.message;
+                result.stdout = [];
+                resolve(result)
+            }
+            else {
+                result.stderr = "";
+                const response_arr = new Array<DBRecord>();
+                response_arr.push(row);
+                result.stdout = response_arr;
+                resolve(result);
+            }
+        });
     });
-    db.close();
 };
 
-// export function select_events(): Array<DBRecord> {
-export async function select_events(): Promise<any> {
+// todo: add pagination
+export function select_events(): Promise<DBResult> {
     var db = get_db(DB_PATH);
-    // todo: add pagination
-    const stmt = 'select * from snapshot limit ?';
-    console.log("select events stmt: ", stmt);
-    var response_arr = new Array<DBRecord>();
-    const select = db.all(stmt, [100], (err, rows) => {
-        console.log("number of rows: ", rows.length);
-        if (err) {
-            // todo: no good, change that.
-            console.error(err.message);
-            return [];
-        }
-        else {
-            for (var row of rows) {
-                const _row: DBRecord = row;
-                response_arr.push(_row);
-
-            };
-            console.log("len resp array in db all: ", response_arr.length);
-            return response_arr;
-        }
+    const stmt = "select * from snapshot limit ?";
+    let result: DBResult = {} as DBResult;
+    return new Promise((resolve) => {
+        db.all(stmt, [100], (err, rows) => {
+            console.log("number of rows: ", rows.length);
+            if (err) {
+                result.stderr = err.message;
+                result.stdout = [];
+            } else {
+                const response_arr = new Array<DBRecord>();
+                for (var row of rows) {
+                    const _row: DBRecord = row;
+                    response_arr.push(_row);
+                }
+                result.stderr = "";
+                result.stdout = response_arr;
+            }
+            resolve(result);
+        });
     });
-    // console.log("select: ", select);
-    // db.close();
-    // console.log("len resp array out of db all: ", response_arr);
-    // return response_arr;
 }
-
-
-/*
-
-var db = new sqlite3.Database(DB_PATH);
-  db.serialize(function () {
-    const create_stmt = "CREATE TABLE lorem (info TEXT)";
-    db.run(create_stmt);
-
-    const ins_stmt = "INSERT INTO lorem VALUES (?)";
-    var stmt = db.prepare("INSERT INTO lorem VALUES (?)");
-    for (var i = 0; i < 10; i++) {
-      stmt.run("Ipsum " + i);
-    }
-    stmt.finalize();
-
-    db.each("SELECT rowid AS id, info FROM lorem", function (err: any, row: any) {
-      console.log(row.id + ": " + row.info);
-    });
-  });
-
-*/
