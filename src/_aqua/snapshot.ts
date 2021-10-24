@@ -80,7 +80,9 @@ export function registerEIPValidator(...args: any) {
 
 
 export interface DataProviderDef {
-    get_record: (snapshot_id: number, callParams: CallParams<'snapshot_id'>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }>;
+    clear_table: (password: string, callParams: CallParams<'password'>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }>;
+get_record: (snapshot_id: number, callParams: CallParams<'snapshot_id'>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }>;
+get_record_count: (callParams: CallParams<null>) => number | Promise<number>;
 get_records: (callParams: CallParams<null>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }>;
 }
 export function registerDataProvider(service: DataProviderDef): void;
@@ -96,6 +98,20 @@ export function registerDataProvider(...args: any) {
     "defaultServiceId" : "snapshot",
     "functions" : [
         {
+            "functionName" : "clear_table",
+            "argDefs" : [
+                {
+                    "name" : "password",
+                    "argType" : {
+                        "tag" : "primitive"
+                    }
+                }
+            ],
+            "returnType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
             "functionName" : "get_record",
             "argDefs" : [
                 {
@@ -104,6 +120,14 @@ export function registerDataProvider(...args: any) {
                         "tag" : "primitive"
                     }
                 }
+            ],
+            "returnType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "functionName" : "get_record_count",
+            "argDefs" : [
             ],
             "returnType" : {
                 "tag" : "primitive"
@@ -124,10 +148,10 @@ export function registerDataProvider(...args: any) {
       
 // Functions
  
-
-export function validate(relay: string, peer_: string, eip712_json: string, config?: {ttl?: number}): Promise<string>;
-export function validate(peer: FluencePeer, relay: string, peer_: string, eip712_json: string, config?: {ttl?: number}): Promise<string>;
-export function validate(...args: any) {
+export type Delete_rowsResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }
+export function delete_rows(passwd: string, peer_: string, relay: string, config?: {ttl?: number}): Promise<Delete_rowsResult>;
+export function delete_rows(peer: FluencePeer, passwd: string, peer_: string, relay: string, config?: {ttl?: number}): Promise<Delete_rowsResult>;
+export function delete_rows(...args: any) {
 
     let script = `
                         (xor
@@ -141,18 +165,18 @@ export function validate(...args: any) {
                             (seq
                              (seq
                               (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                              (call %init_peer_id% ("getDataSrv" "relay") [] relay)
+                              (call %init_peer_id% ("getDataSrv" "passwd") [] passwd)
                              )
                              (call %init_peer_id% ("getDataSrv" "peer") [] peer)
                             )
-                            (call %init_peer_id% ("getDataSrv" "eip712_json") [] eip712_json)
+                            (call %init_peer_id% ("getDataSrv" "relay") [] relay)
                            )
                            (call -relay- ("op" "noop") [])
                           )
                           (call relay ("op" "noop") [])
                          )
                          (xor
-                          (call peer ("snapshot" "eip712_validation_string") [eip712_json peer] result)
+                          (call peer ("snapshot" "clear_table") [passwd] result)
                           (seq
                            (seq
                             (seq
@@ -180,13 +204,13 @@ export function validate(...args: any) {
     return callFunction(
         args,
         {
-    "functionName" : "validate",
+    "functionName" : "delete_rows",
     "returnType" : {
         "tag" : "primitive"
     },
     "argDefs" : [
         {
-            "name" : "relay",
+            "name" : "passwd",
             "argType" : {
                 "tag" : "primitive"
             }
@@ -198,7 +222,7 @@ export function validate(...args: any) {
             }
         },
         {
-            "name" : "eip712_json",
+            "name" : "relay",
             "argType" : {
                 "tag" : "primitive"
             }
@@ -314,6 +338,92 @@ export function validate_from_url(...args: any) {
 }
 
  
+
+export function get_count(relay: string, peer_: string, config?: {ttl?: number}): Promise<number>;
+export function get_count(peer: FluencePeer, relay: string, peer_: string, config?: {ttl?: number}): Promise<number>;
+export function get_count(...args: any) {
+
+    let script = `
+                        (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (seq
+                             (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                             (call %init_peer_id% ("getDataSrv" "relay") [] relay)
+                            )
+                            (call %init_peer_id% ("getDataSrv" "peer") [] peer)
+                           )
+                           (call -relay- ("op" "noop") [])
+                          )
+                          (call relay ("op" "noop") [])
+                         )
+                         (xor
+                          (call peer ("snapshot" "get_record_count") [] result)
+                          (seq
+                           (seq
+                            (seq
+                             (call relay ("op" "noop") [])
+                             (call -relay- ("op" "noop") [])
+                            )
+                            (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                           )
+                           (call -relay- ("op" "noop") [])
+                          )
+                         )
+                        )
+                        (call relay ("op" "noop") [])
+                       )
+                       (call -relay- ("op" "noop") [])
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [result])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction(
+        args,
+        {
+    "functionName" : "get_count",
+    "returnType" : {
+        "tag" : "primitive"
+    },
+    "argDefs" : [
+        {
+            "name" : "relay",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "peer",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        }
+    ],
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
 export type Get_recordResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }
 export function get_record(relay: string, peer_: string, snapshot_id: number, config?: {ttl?: number}): Promise<Get_recordResult>;
 export function get_record(peer: FluencePeer, relay: string, peer_: string, snapshot_id: number, config?: {ttl?: number}): Promise<Get_recordResult>;
@@ -389,6 +499,101 @@ export function get_record(...args: any) {
         },
         {
             "name" : "snapshot_id",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        }
+    ],
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+
+export function validate(relay: string, peer_: string, eip712_json: string, config?: {ttl?: number}): Promise<string>;
+export function validate(peer: FluencePeer, relay: string, peer_: string, eip712_json: string, config?: {ttl?: number}): Promise<string>;
+export function validate(...args: any) {
+
+    let script = `
+                        (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (seq
+                             (seq
+                              (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                              (call %init_peer_id% ("getDataSrv" "relay") [] relay)
+                             )
+                             (call %init_peer_id% ("getDataSrv" "peer") [] peer)
+                            )
+                            (call %init_peer_id% ("getDataSrv" "eip712_json") [] eip712_json)
+                           )
+                           (call -relay- ("op" "noop") [])
+                          )
+                          (call relay ("op" "noop") [])
+                         )
+                         (xor
+                          (call peer ("snapshot" "eip712_validation_string") [eip712_json peer] result)
+                          (seq
+                           (seq
+                            (seq
+                             (call relay ("op" "noop") [])
+                             (call -relay- ("op" "noop") [])
+                            )
+                            (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                           )
+                           (call -relay- ("op" "noop") [])
+                          )
+                         )
+                        )
+                        (call relay ("op" "noop") [])
+                       )
+                       (call -relay- ("op" "noop") [])
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [result])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction(
+        args,
+        {
+    "functionName" : "validate",
+    "returnType" : {
+        "tag" : "primitive"
+    },
+    "argDefs" : [
+        {
+            "name" : "relay",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "peer",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "eip712_json",
             "argType" : {
                 "tag" : "primitive"
             }

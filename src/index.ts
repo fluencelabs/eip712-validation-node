@@ -1,34 +1,25 @@
 import { Fluence, KeyPair } from "@fluencelabs/fluence";
 import { krasnodar } from "@fluencelabs/fluence-network-environment";
 import { registerEIPValidator, EIPValidatorDef, registerDataProvider, DataProviderDef } from "./_aqua/snapshot";
-import { ethers } from "ethers";
-import { TypedDataUtils } from 'ethers-eip712';  // https://github.com/0xsequence/ethers-eip712
 import { eip_validation, Response } from "./eip_processor";
-import { get_db, create_table, insert_event, DBRecord, DBResult, select_events, select_event } from './local_db';
+import { get_db, create_table, insert_event, DBRecord, DBResult, select_events, select_event, select_count } from './local_db';
 import got from 'got';
-import { base64 } from "ethers/lib/utils";
+import { ethers } from "ethers";
+import { create_wallet, sign_response } from "./utils";
 
 
 // Arbitrary secret key that could be read from file, CLI arg or db
 // We derive both the PeerId and the (ethers) wallet from this key
 const SecretKey = "0x0123456789012345678901234567890123456789012345678901234567890123";
+
+// SQLite path
 const DB_PATH = "./data/snapshot.db";
-
-
-function create_wallet(sk: string): ethers.Wallet {
-  return new ethers.Wallet(sk);
-}
-
-function sign_response(wallet: ethers.Wallet, response: Response): Promise<string> {
-  const signed_msg = wallet.signMessage(JSON.stringify(response));
-  return signed_msg;
-}
 
 // class exposed as service `EIPValidation` in snapshot.aqua
 class EIPValidator implements EIPValidatorDef {
 
   async eip712_validation_string(eip712_json: string): Promise<string> {
-    // todo: need to fix this to use local peer key
+    // todo: pre-create wallet and read from file. there should be one static wallet for the life of the client node
     const wallet = create_wallet(SecretKey);
     let response = eip_validation(eip712_json, wallet.address);
 
@@ -80,17 +71,31 @@ class EIPValidator implements EIPValidatorDef {
 }
 // class exposed as service `DataProviderDef` in snapshot.aqua
 class DataProvider implements DataProviderDef {
-
+  // record by snapshot_id
   async get_record(snapshot_id: number): Promise<any> {
     return select_event(snapshot_id);
-
   }
 
+  // get all records. currently limited to 100 rows max.
+  // todo: add paginaton 
   async get_records(): Promise<any> {
     // todo: add pagination
     const result = await select_events();
     console.log("get records: ", result);
     return result;
+  }
+
+  // row count; if err doing so,  return value is -1
+  async get_record_count(): Promise<number> {
+    const result = await select_count();
+    console.log("get records: ", result);
+    return result;
+  }
+
+  // clear table -- illustrative purposes only
+  async clear_table(password: string): Promise<any> {
+    return this.clear_table(password);
+
   }
 }
 
@@ -123,14 +128,7 @@ async function main() {
 
   registerEIPValidator("EIPValidator", new EIPValidator());
   registerDataProvider("DataProvider", new DataProvider);
-
-  // const eip_doc: any = await got('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS').json();
-  // console.log("eip json obj: ", eip_doc);
-
-  // let obj = new EIPValidator();
-  // let result = obj.eip712_validation_url(JSON.stringify(eip_doc));
-  // console.log("result: ", result);
-
+  console.log("crtl-c to exit");
   // await Fluence.stop();
 }
 

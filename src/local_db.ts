@@ -8,6 +8,7 @@ const sqlite3 = sqlite.verbose();
 import { Response } from './eip_processor';
 
 const DB_PATH = './data/snapshot.db';
+const PWD_HASH = "bad really bad";
 
 export interface DBRecord {
     snapshot_id: number;
@@ -43,7 +44,6 @@ export function get_db(db_path: string): sqlite.Database {
     return db;
 
 }
-
 
 export async function create_table(db: sqlite.Database) {
     const stmt = `create table if not exists snapshot (
@@ -88,28 +88,27 @@ export async function insert_event(db: sqlite.Database, eip_obj: any, response_o
 export async function select_event(snapshot_id: number): Promise<DBResult> {
     var db = get_db(DB_PATH);
     let result: DBResult = {} as DBResult;
-    const stmt = 'select * from snapshot where snapshot_id=?'
+    const stmt = 'select * from snapshot where snapshot_id=?';
     return new Promise((resolve) => {
         db.get(stmt, [snapshot_id], (err, row) => {
             db.close();
             if (err) {
                 result.stderr = err.message;
                 result.stdout = [];
-                resolve(result)
             }
             else {
                 result.stderr = "";
                 const response_arr = new Array<DBRecord>();
                 response_arr.push(row);
                 result.stdout = response_arr;
-                resolve(result);
             }
+            resolve(result)
         });
     });
 };
 
 // todo: add pagination
-export function select_events(): Promise<DBResult> {
+export async function select_events(): Promise<DBResult> {
     var db = get_db(DB_PATH);
     const stmt = "select * from snapshot limit ?";
     let result: DBResult = {} as DBResult;
@@ -132,3 +131,53 @@ export function select_events(): Promise<DBResult> {
         });
     });
 }
+
+export async function select_count(): Promise<number> {
+    var db = get_db(DB_PATH);
+    const stmt = 'select count(*) as count from snapshot';
+    let result: number;
+    return new Promise((resolve) => {
+        db.get(stmt, [], (err, row) => {
+            db.close();
+            if (err) {
+                result = -1;
+            }
+            else {
+                console.log("count: ", row);
+                result = row.count;
+            }
+            resolve(result);
+        });
+    });
+};
+
+
+export async function clear_table(pwd_hash: string): Promise<DBResult> {
+    let result: DBResult = {} as DBResult;
+    // todo: you know what to do
+    if (pwd_hash === PWD_HASH) {
+        result.stderr = "invalid password";
+        result.stdout = [];
+        resolveProperties(result);
+    }
+
+    var db = get_db(DB_PATH);
+    const stmt = 'delete from snapshot'
+    return new Promise((resolve) => {
+        db.get(stmt, [], (err, row) => {
+            db.close();
+            if (err) {
+                result.stderr = err.message;
+                result.stdout = [];
+            }
+            else {
+                console.log("count: ", row);
+                result.stderr = "";
+                const response_arr = new Array<DBRecord>();
+                response_arr.push(row);
+                result.stdout = response_arr;
+            }
+            resolve(result);
+        });
+    });
+};

@@ -1,0 +1,43 @@
+(xor
+ (seq
+  (seq
+   (seq
+    (seq
+     (seq
+      (seq
+       (seq
+        (seq
+         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+         (call %init_peer_id% ("getDataSrv" "relay") [] relay)
+        )
+        (call %init_peer_id% ("getDataSrv" "peer") [] peer)
+       )
+       (call -relay- ("op" "noop") [])
+      )
+      (call relay ("op" "noop") [])
+     )
+     (xor
+      (call peer ("snapshot" "get_record_count") [] result)
+      (seq
+       (seq
+        (seq
+         (call relay ("op" "noop") [])
+         (call -relay- ("op" "noop") [])
+        )
+        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+       )
+       (call -relay- ("op" "noop") [])
+      )
+     )
+    )
+    (call relay ("op" "noop") [])
+   )
+   (call -relay- ("op" "noop") [])
+  )
+  (xor
+   (call %init_peer_id% ("callbackSrv" "response") [result])
+   (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+  )
+ )
+ (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+)

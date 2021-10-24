@@ -27,7 +27,8 @@ service EIPValidator("snapshot"):
 service DataProvider("snapshot"):
     get_records() -> DBResult
     get_record(snapshot_id: u64) -> DBResult
-
+    get_record_count() -> u64
+    clear_table(password: string) -> DBResult
 
 func validate(relay: string, peer:string, eip712_json: string) -> string:
     on peer via relay:
@@ -51,4 +52,12 @@ func get_records(relay:string, peer:string) -> DBResult:
         result <- DataProvider.get_records()
     <- result
 
+func get_count(relay:string, peer:string) -> u64:
+    on peer via relay:
+        result <- DataProvider.get_record_count()
+    <- result
 
+func delete_rows(passwd: string, peer: string, relay:string) -> DBResult:
+    on peer via relay:
+        result <- DataProvider.clear_table(passwd)
+    <- result
