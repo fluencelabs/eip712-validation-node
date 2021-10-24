@@ -19,14 +19,9 @@
     "it-all": "^1.0.5"
   },
   "scripts": {
-    "compile-aqua": "aqua -i ../aqua-scripts -o src/_aqua/",
-    "prebuild": "npm run compile-aqua",
-    "build": "tsc",
-    "prestart:local": "npm run build",
-    "start:local": "node dist/src/index.js local",
-    "prestart:remote": "npm run build",
-    "start:remote": "node dist/src/index.js krasnodar",
-    "start": "npm run start:remote"
+    "start": "node dist/src/index.js",
+    "compile-aqua": "aqua -i aqua -o src/_aqua/",
+    "watch-aqua": "chokidar \"**/*.aqua\" -c \"npm run compile-aqua\""
   },
   "repository": {
     "type": "git",

@@ -1,2 +1,4 @@
 dist/
-src/_aqua/
+node_modules/
+*bk
+*bak
