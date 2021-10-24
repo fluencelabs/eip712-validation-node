@@ -1,11 +1,12 @@
 import { Fluence, KeyPair } from "@fluencelabs/fluence";
 import { krasnodar } from "@fluencelabs/fluence-network-environment";
 import { registerEIPValidator, EIPValidatorDef, registerDataProvider, DataProviderDef } from "./_aqua/snapshot";
-import { eip_validation, Response } from "./eip_processor";
-import { get_db, create_table, insert_event, DBRecord, DBResult, select_events, select_event, select_count } from './local_db';
+import { eip_validation, Response as EIPResponse } from "./eip_processor";
+import { get_db, create_table, delete_records, insert_event, DBRecord, DBResult, select_events, select_event, select_count } from './local_db';
 import got from 'got';
 import { ethers } from "ethers";
 import { create_wallet, sign_response } from "./utils";
+import { ResultCodes } from "@fluencelabs/fluence/dist/internal/commonTypes";
 
 
 // Arbitrary secret key that could be read from file, CLI arg or db
@@ -15,10 +16,18 @@ const SecretKey = "0x01234567890123456789012345678901234567890123456789012345678
 // SQLite path
 const DB_PATH = "./data/snapshot.db";
 
+export interface ValidationResponse {
+  signature: string;
+  validation: EIPResponse;
+}
+interface ValidationResult {
+  stderr: string;
+  stdout: ValidationResponse;
+}
 // class exposed as service `EIPValidation` in snapshot.aqua
 class EIPValidator implements EIPValidatorDef {
 
-  async eip712_validation_string(eip712_json: string): Promise<string> {
+  async eip712_validation_string(eip712_json: string): Promise<ValidationResult> {
     // todo: pre-create wallet and read from file. there should be one static wallet for the life of the client node
     const wallet = create_wallet(SecretKey);
     let response = eip_validation(eip712_json, wallet.address);
@@ -27,45 +36,43 @@ class EIPValidator implements EIPValidatorDef {
     console.log("eip validation response: ", resp_str);
 
     const signed_response = await wallet.signMessage(resp_str);
-    console.log("signed response: ", signed_response);
+    let obj: ValidationResponse = { "signature": signed_response, "validation": response };
 
-    // verify test
-    // const address = ethers.utils.verifyMessage(resp_str, signed_response);
-    // console.log("verify signature. peer_id: ", peer_id, " verified addr: ", address, " equal: ", peer_id === address);
+    // commit to local sqlite
+    let db = get_db(DB_PATH);
+    await create_table(db);
+    await insert_event(db, JSON.parse(resp_str), response, signed_response);
 
-    // console.log(resp_str);
-    let obj = { "signature": signed_response, "validation": response };
+    let result = {} as ValidationResult;
+    result.stderr = "";
+    result.stdout = obj;
 
-    return JSON.stringify(obj);
+    return result;
   }
 
-  async eip712_validation_url(eip712_url: string): Promise<string> {
+  async eip712_validation_url(eip712_url: string): Promise<ValidationResult> {
 
-    const eip = await got.get('https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS');
+    const eip = await got.get(eip712_url);
     const eip_json = eip.body;
 
-    // todo: need to fix this to use local peer key
     const wallet = create_wallet(SecretKey);
     let response = eip_validation(eip_json, wallet.address);
 
     const resp_str = JSON.stringify(response);
     const signed_response = await wallet.signMessage(resp_str);
 
-
-    // verify test
-    // const address = ethers.utils.verifyMessage(resp_str, signed_response);
-    // console.log("verify signature. peer_id: ", peer_id, " verified addr: ", address, " equal: ", peer_id === address);
-
-    // console.log(resp_str);
-
-    let obj = { "signature": signed_response, "validation": response };
+    let obj: ValidationResponse = { "signature": signed_response, "validation": response };
 
     // commit to local sqlite
     let db = get_db(DB_PATH);
     await create_table(db);
     await insert_event(db, JSON.parse(eip_json), response, signed_response);
 
-    return JSON.stringify(obj);
+    let result = {} as ValidationResult;
+    result.stderr = "";
+    result.stdout = obj;
+
+    return result;
   }
 
 }
@@ -93,8 +100,8 @@ class DataProvider implements DataProviderDef {
   }
 
   // clear table -- illustrative purposes only
-  async clear_table(password: string): Promise<any> {
-    return this.clear_table(password);
+  async delete_records(password: string): Promise<any> {
+    return await delete_records(password);
 
   }
 }

@@ -151,8 +151,7 @@ export async function select_count(): Promise<number> {
     });
 };
 
-
-export async function clear_table(pwd_hash: string): Promise<DBResult> {
+export async function delete_records(pwd_hash: string): Promise<DBResult> {
     let result: DBResult = {} as DBResult;
     // todo: you know what to do
     if (pwd_hash === PWD_HASH) {

@@ -16,15 +16,18 @@
 
 import { Fluence, setLogLevel, FluencePeer } from "@fluencelabs/fluence";
 import { krasnodar, Node } from "@fluencelabs/fluence-network-environment";
-import { validate, get_record, get_records, get_record_count } from "./_aqua/demo_validation";
+import { validate, get_record, get_records, get_record_count, delete_records } from "./_aqua/demo_validation";
 
 
+const NODE_DB_PWD = "bad really bad"; const PWD_HASH = "bad really bad";
+const EIP712_URL = "https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS";
 
 interface NodeTuple {
   node_id: string;
   relay_id: string
 }
 
+// PoC node parameters
 let poc_topologies: Array<NodeTuple> = [
   {
     "node_id": "12D3KooWFCY8xqebtZqNeiA5took71bUNAedzCCDuCuM1QTdTbWT",
@@ -34,17 +37,33 @@ let poc_topologies: Array<NodeTuple> = [
 
 
 async function main() {
+
+
   console.log("Welcome to Snapshot PoC demo.");
   // setLogLevel('DEBUG');
 
   await Fluence.start({ connectTo: krasnodar[2] });
   console.log(
-    "created a Fluence client %s with relay %s",
+    "Created Fluence client with\npeer id: %s\nrelay id %s\n",
     Fluence.getStatus().peerId,
     Fluence.getStatus().relayPeerId
   );
 
+  console.log("\nRoundtrip Validation demo.\n");
+
+  console.log("Let's check the node db and clear all records if need be:");
   let rec_count = await get_record_count(poc_topologies[0].node_id, poc_topologies[0].relay_id);
+  if (rec_count > 0) {
+    console.log("deleting %s records", rec_count);
+    let _res = await delete_records(NODE_DB_PWD, poc_topologies[0].node_id, poc_topologies[0].relay_id);
+  }
+
+  console.log("Lets validate proposal %s, which is old and should fail.", EIP712_URL);
+  let doc_val = await validate(EIP712_URL, poc_topologies[0].node_id, poc_topologies[0].relay_id);
+  // if (doc_val.stderr.length > 0) {}
+  console.log("doc val: ", doc_val);
+
+  rec_count = await get_record_count(poc_topologies[0].node_id, poc_topologies[0].relay_id);
   console.log("record count: ", rec_count);
 
   let records = await get_records(poc_topologies[0].node_id, poc_topologies[0].relay_id);
@@ -56,6 +75,11 @@ async function main() {
   }
 
 
+  // verify test
+  // const address = ethers.utils.verifyMessage(resp_str, signed_response);
+  // console.log("verify signature. peer_id: ", peer_id, " verified addr: ", address, " equal: ", peer_id === address);
+
+  // console.log(resp_str);
 
 
   return;

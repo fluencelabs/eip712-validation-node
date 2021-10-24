@@ -25,7 +25,6 @@ function ts_comp(peer_ts: number, snapshot_ts: number, ts_delta: number): boolea
     return false;
 }
 
-
 function check_signature(eip_obj: any): boolean {
     const signing_addr = ethers.utils.verifyTypedData(eip_obj.data.domain, eip_obj.data.types, eip_obj.data.message, eip_obj.sig);
 
@@ -33,7 +32,6 @@ function check_signature(eip_obj: any): boolean {
     const sig_assert = (signing_addr == eip_obj.address);
     return sig_assert;
 }
-
 
 // export async function eip_validation(eip_str: string, peer_id: string): Promise<Response> {
 export function eip_validation(eip_str: string, peer_id: string): Response {
