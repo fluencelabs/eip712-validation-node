@@ -1,15 +1,15 @@
 {
-  "name": "snapshot-node-poc",
+  "name": "snapshot-client",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node -r ts-node/register src/index.ts",
-    "compile-aqua": "aqua --import . -i ./aqua/ -o ./src/_aqua",
+    "compile-aqua": "aqua -i ../aqua/demo_validation.aqua -o ./src/_aqua",
     "watch-aqua": "chokidar \"**/*.aqua\" -c \"npm run compile-aqua\""
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@fluencelabs/aqua": "^0.4.0-235",
     "chokidar-cli": "^3.0.0",
@@ -21,9 +21,6 @@
     "@fluencelabs/fluence-network-environment": "1.0.10",
     "@types/sqlite3": "^3.1.7",
     "base64-js": "^1.5.1",
-    "ethers": "^5.4.7",
-    "ethers-eip712": "^0.2.0",
-    "got": "^11.8.2",
-    "sqlite3": "^4.2.0"
+    "got": "^11.8.2"
   }
 }

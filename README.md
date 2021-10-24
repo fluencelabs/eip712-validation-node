@@ -2,9 +2,9 @@
 
 ## Solution Overview
 
-We implemented a Typescript Fluence peer to validate the timestamp of Snapshot events, i.e., proposals and votes, against te node-local timestamp, all UTC, as part of an EIP712 document. That is, the implmented peer exposes select interfaces to be use with Aqua and operates as an "almost" fully functional peer lacking predominantly the ability to run arbitrary Wasm services. In that sense, the node ma be considered as special service node.
+We implemented a Typescript Fluence peer to validate the timestamp of Snapshot events, i.e., proposals and votes, against the node-local timestamp, all UTC. The Snapshot event is presented as a signed EIP712 document which is also verified. 
 
-In order to facilitate the validation, the peer accepts either an EIP712 json string or link to an url for a EIP712 json string representation, e.g., [IPFS](https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS). The high-level process is depicted in Figure 1.
+The implemented peer exposes select interfaces to be used with Aqua and operates as a nearly fully functional peer lacking predominantly the ability to run arbitrary Wasm services. In that sense, the node may be considered a special-purpose service node. In order to facilitate the validations, the peer accepts either an EIP712 json string or link to an url for an EIP712 json string representation, e.g., [IPFS](https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjtedcNLodYywpmS). The high-level process is depicted in Figure 1.
 
 ```mermaid
     sequenceDiagram
@@ -28,9 +28,9 @@ In order to facilitate the validation, the peer accepts either an EIP712 json st
     N ->> D: Persist result -- NOT implemented
 ```
 
-The PoC implementation does not provide integration with external Snapshot distributed databases but allows for easy extension to incorporate exogenous persistence solutions. The validation process, including not implemented checks, can be found in [eip_validation](./src/eip_processor.ts) and the local persistence in [local sqlite](./src/local_db.ts).
+The PoC implementation does not provide integration with external Snapshot distributed persistence but allows for easy extension to incorporate exogenous storage solutions. The validation process, including not implemented checks, can be found in [eip_validation](./src/eip_processor.ts) and the local persistence in [local sqlite](./src/local_db.ts).
 
-In order to access the services with Aqua, please see [implementation](./aqua/snapshot.aqua), which can be fired from a Typescript client, another peer or the `fldist` command line tool. 
+In order to access the services with Aqua, please see [implementation](./aqua/snapshot.aqua), which can be fired from a Typescript client, another peer or the `fldist` command line tool.
 
 In addition, Aqua can be used to query a Peer's local database for already processed validations. This allows new peers, for example, to build up a local history of previously validated events, if so desired. Please note that a consensus algorithm should be implemented and used to manage the sync process. The query process is outlined in Figure 2 below and the Aqua queries are located in [snapshot aqua](./aqua/snapshot.aqua).
 

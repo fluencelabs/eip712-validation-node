@@ -1,0 +1,52 @@
+data DBRecord:
+    snapshot_id: u64
+    event_address: string
+    event_signature: string
+    eip712_doc: string
+    peer_id: string
+    timestamp: u64
+    eip_validation: bool
+    ts_validation: bool
+    signed_response: string
+
+data DBResult:
+    stderr: string
+    stdout: []DBRecord
+
+service EIPValidator("EIPValidator"):
+    eip712_validation_string(eip_str: string, peer_id: string) -> string
+    eip712_validation_url(eip_str: string, peer_id: string) -> string
+
+service DataProvider("DataProvider"):
+    get_records() -> DBResult
+    get_record(snapshot_id: u64) -> DBResult
+    get_record_count() -> u64
+    clear_table(password: string) -> DBResult
+
+
+func validate(eip712_url: string, node: string, relay:string) -> string:
+    on node via relay:
+        res <- EIPValidator.eip712_validation_url(eip712_url, node)
+    <- res
+
+func get_records(node: string, relay:string) -> DBResult:
+    on node via relay:
+        res <- DataProvider.get_records()
+    <- res
+
+func get_record(snapshot_id: u64, node: string, relay:string) -> DBResult:
+    on node via relay:
+        res <- DataProvider.get_record(snapshot_id)
+    <- res
+
+func get_record_count(node: string, relay:string) -> u64:
+    on node via relay:
+        res <- DataProvider.get_record_count()
+    <- res
+
+func delete_rows(password: string, node: string, relay:string) -> DBResult:
+    on node via relay:
+        result <- DataProvider.clear_table(password)
+    <- result
+
+
