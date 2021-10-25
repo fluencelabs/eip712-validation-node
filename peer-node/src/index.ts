@@ -116,25 +116,21 @@ async function startFluencePeer(skBytes: Uint8Array): Promise<void> {
 
 async function main() {
 
+  console.log("Snapshot service node running with ...")
   let wallet = new ethers.Wallet(SecretKey);
   console.log("wallet from sk: ", wallet.address);
   console.log("wallet pk: ", wallet.publicKey);
 
   const skBytes: Uint8Array = ethers.utils.arrayify(SecretKey);
-  console.log("arrayify: ", skBytes);
-
   await startFluencePeer(skBytes);
-
 
   console.log("PeerId: ", Fluence.getStatus().peerId);
   console.log("Relay id: ", Fluence.getStatus().relayPeerId);
 
-  // let peer = Fluence.getPeer();
-  // console.log(peer);
-  // console.log(Fluence.KeyPair);
-
+  // register the Aqua-programmable services
   registerEIPValidator("EIPValidator", new EIPValidator());
   registerDataProvider("DataProvider", new DataProvider);
+
   console.log("crtl-c to exit");
   // await Fluence.stop();
 }

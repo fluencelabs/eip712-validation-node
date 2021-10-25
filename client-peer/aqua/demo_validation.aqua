@@ -1,3 +1,18 @@
+data Response:
+    peer_id: string
+    timestamp: u64
+    eip_validation: bool
+    ts_validation: bool
+
+data EipResponse:
+    signature: string
+    validation: Response
+
+data ValidationResult:
+    stderr: string
+    stdout: EipResponse
+
+
 data DBRecord:
     snapshot_id: u64
     event_address: string
@@ -14,8 +29,8 @@ data DBResult:
     stdout: []DBRecord
 
 service EIPValidator("EIPValidator"):
-    eip712_validation_string(eip_str: string, peer_id: string) -> string
-    eip712_validation_url(eip_str: string, peer_id: string) -> string
+    eip712_validation_string(eip_str: string, peer_id: string) -> ValidationResult
+    eip712_validation_url(eip_str: string, peer_id: string) -> ValidationResult
 
 service DataProvider("DataProvider"):
     get_records() -> DBResult
@@ -24,7 +39,7 @@ service DataProvider("DataProvider"):
     delete_records(password: string) -> DBResult
 
 
-func validate(eip712_url: string, node: string, relay:string) -> string:
+func validate(eip712_url: string, node: string, relay:string) -> ValidationResult:
     on node via relay:
         res <- EIPValidator.eip712_validation_url(eip712_url, node)
     <- res

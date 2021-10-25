@@ -61,26 +61,22 @@ async function main() {
   console.log("Lets validate proposal %s, which is old and should fail.", EIP712_URL);
   let doc_val = await validate(EIP712_URL, poc_topologies[0].node_id, poc_topologies[0].relay_id);
   // if (doc_val.stderr.length > 0) {}
-  console.log("doc val: ", doc_val);
-
-  rec_count = await get_record_count(poc_topologies[0].node_id, poc_topologies[0].relay_id);
-  console.log("record count: ", rec_count);
+  console.log("signed eip validation result: ", doc_val);
 
   let records = await get_records(poc_topologies[0].node_id, poc_topologies[0].relay_id);
   if (records.stderr.length > 0) {
-    console.log("Records fetch error: ", records.stderr);
+    console.log("We should have one record in the node db but do not: ", records.stderr);
   }
   else {
-    console.log("record length: ", records.stdout.length);
+    console.log("We should have one record in the node db and have %s record(s).", records.stdout.length);
   }
 
-
-  // verify test
-  // const address = ethers.utils.verifyMessage(resp_str, signed_response);
-  // console.log("verify signature. peer_id: ", peer_id, " verified addr: ", address, " equal: ", peer_id === address);
-
-  // console.log(resp_str);
-
+  console.log("We know from the EIP document that the snapshot is 9278489, which i sued as a unique key in the sqlite db.")
+  console.log(" and we can call individual recirds by snapshot:")
+  let good_record = await get_record(9278489, poc_topologies[0].node_id, poc_topologies[0].relay_id);
+  let bad_record = await get_record(92784890, poc_topologies[0].node_id, poc_topologies[0].relay_id);
+  console.log("result for call with 9278489: ", good_record);
+  console.log("result for call with bad 92784890: ", bad_record);
 
   return;
 }

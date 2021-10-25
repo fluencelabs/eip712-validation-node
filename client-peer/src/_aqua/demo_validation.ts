@@ -17,8 +17,8 @@ import {
 // Services
 
 export interface EIPValidatorDef {
-    eip712_validation_string: (eip_str: string, peer_id: string, callParams: CallParams<'eip_str' | 'peer_id'>) => string | Promise<string>;
-eip712_validation_url: (eip_str: string, peer_id: string, callParams: CallParams<'eip_str' | 'peer_id'>) => string | Promise<string>;
+    eip712_validation_string: (eip_str: string, peer_id: string, callParams: CallParams<'eip_str' | 'peer_id'>) => { stderr: string; stdout: { signature: string; validation: { eip_validation: boolean; peer_id: string; timestamp: number; ts_validation: boolean; }; }; } | Promise<{ stderr: string; stdout: { signature: string; validation: { eip_validation: boolean; peer_id: string; timestamp: number; ts_validation: boolean; }; }; }>;
+eip712_validation_url: (eip_str: string, peer_id: string, callParams: CallParams<'eip_str' | 'peer_id'>) => { stderr: string; stdout: { signature: string; validation: { eip_validation: boolean; peer_id: string; timestamp: number; ts_validation: boolean; }; }; } | Promise<{ stderr: string; stdout: { signature: string; validation: { eip_validation: boolean; peer_id: string; timestamp: number; ts_validation: boolean; }; }; }>;
 }
 export function registerEIPValidator(service: EIPValidatorDef): void;
 export function registerEIPValidator(serviceId: string, service: EIPValidatorDef): void;
@@ -338,9 +338,9 @@ export function delete_records(...args: any) {
 }
 
  
-
-export function validate(eip712_url: string, node: string, relay: string, config?: {ttl?: number}): Promise<string>;
-export function validate(peer: FluencePeer, eip712_url: string, node: string, relay: string, config?: {ttl?: number}): Promise<string>;
+export type ValidateResult = { stderr: string; stdout: { signature: string; validation: { eip_validation: boolean; peer_id: string; timestamp: number; ts_validation: boolean; }; }; }
+export function validate(eip712_url: string, node: string, relay: string, config?: {ttl?: number}): Promise<ValidateResult>;
+export function validate(peer: FluencePeer, eip712_url: string, node: string, relay: string, config?: {ttl?: number}): Promise<ValidateResult>;
 export function validate(...args: any) {
 
     let script = `
