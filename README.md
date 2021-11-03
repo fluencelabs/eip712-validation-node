@@ -104,6 +104,7 @@ npm i
 npm run compile-aqua
 npm start
 ```
+
 The client executes a validation and a few node-local database calls specified in the `aqua\demo_validation.aqua` file. Note that the client could be a browser, see the [Quickstart](https://doc.fluence.dev/docs/quick-start) documentation for examples. The expected output for the demo should looks like this:
 
 ```bash
@@ -133,9 +134,11 @@ signed eip validation result:  {
     }
   }
 }
+```
+
 We should have one record in the node db and have 1 record(s).
-We know from the EIP document that the snapshot is 9278489, which i sued as a unique key in the sqlite db.
- and we can call individual recirds by snapshot:
+We know from the EIP document that the snapshot is 9278489, which i used as a unique key in the sqlite db and we can call individual recirds by snapshot id:
+```
 result for call with 9278489:  {
   stderr: '',
   stdout: [
