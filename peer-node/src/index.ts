@@ -78,9 +78,9 @@ class EIPValidator implements EIPValidatorDef {
 }
 // class exposed as service `DataProviderDef` in snapshot.aqua
 class DataProvider implements DataProviderDef {
-  // record by snapshot_id
-  async get_record(snapshot_id: number): Promise<any> {
-    return select_event(snapshot_id);
+  // record by signature
+  async get_record(signature: string): Promise<any> {
+    return select_event(signature);
   }
 
   // get all records. currently limited to 100 rows max.

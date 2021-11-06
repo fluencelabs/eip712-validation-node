@@ -11,7 +11,7 @@ const DB_PATH = './data/snapshot.db';
 const PWD_HASH = "bad really bad";
 
 export interface DBRecord {
-    snapshot_id: number;
+    signature: string;
     event_address: string;
     event_signature: string;
     eip712_doc: string;
@@ -47,9 +47,8 @@ export function get_db(db_path: string): sqlite.Database {
 
 export async function create_table(db: sqlite.Database) {
     const stmt = `create table if not exists snapshot (
-        snapshot_id integer unique,
+        signature text unique,
         event_address text,
-        event_signature text,
         eip712_doc blob,
         peer_id text,
         timestamp integer,
@@ -71,8 +70,8 @@ export async function create_table(db: sqlite.Database) {
 }
 
 export async function insert_event(db: sqlite.Database, eip_obj: any, response_obj: Response, signed_msg: string) {
-    const stmt = `insert into snapshot values (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    var ins_vals = [eip_obj.data.message.snapshot, eip_obj.address, eip_obj.sig, JSON.stringify(eip_obj.data), response_obj.peer_id, response_obj.timestamp, response_obj.eip_validation, response_obj.ts_validation, signed_msg];
+    const stmt = `insert into snapshot values (?, ?, ?, ?, ?, ?, ?, ?)`;
+    var ins_vals = [eip_obj.sig, eip_obj.address, JSON.stringify(eip_obj.data), response_obj.peer_id, response_obj.timestamp, response_obj.eip_validation, response_obj.ts_validation, signed_msg];
     let promise = new Promise<void>((resolve, reject) => db.run(stmt, ins_vals, (res: sqlite.RunResult, err: Error) => {
         // console.dir(res);
         if (err !== null) {
@@ -85,12 +84,12 @@ export async function insert_event(db: sqlite.Database, eip_obj: any, response_o
     return promise;
 }
 
-export async function select_event(snapshot_id: number): Promise<DBResult> {
+export async function select_event(signature: string): Promise<DBResult> {
     var db = get_db(DB_PATH);
     let result: DBResult = {} as DBResult;
-    const stmt = 'select * from snapshot where snapshot_id=?';
+    const stmt = 'select * from snapshot where signature=?';
     return new Promise((resolve) => {
-        db.get(stmt, [snapshot_id], (err, row) => {
+        db.get(stmt, [signature], (err, row) => {
             db.close();
             if (err) {
                 result.stderr = err.message;

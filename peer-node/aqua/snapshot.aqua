@@ -14,9 +14,8 @@ data ValidationResult:
 
 
 data DBRecord:
-    snapshot_id: u64
+    signature: u64
     event_address: string
-    event_signature: string
     eip712_doc: string
     peer_id: string
     timestamp: u64
@@ -34,7 +33,7 @@ service EIPValidator("snapshot"):
 
 service DataProvider("snapshot"):
     get_records() -> DBResult
-    get_record(snapshot_id: u64) -> DBResult
+    get_record(signnature: string) -> DBResult
     get_record_count() -> u64
     delete_records(password: string) -> DBResult
 
@@ -48,9 +47,9 @@ func validate_from_url(relay: string, peer:string, eip712_url: string) -> Valida
         result <- EIPValidator.eip712_validation_url(eip712_url, peer)        
     <- result
 
-func get_record(relay:string, peer:string, snapshot_id: u64) -> DBResult:
+func get_record(relay:string, peer:string, signature: string) -> DBResult:
     on peer via relay:
-        result <- DataProvider.get_record(snapshot_id)
+        result <- DataProvider.get_record(signature)
     <- result
 
 func get_records(relay:string, peer:string) -> DBResult:
