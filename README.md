@@ -25,7 +25,7 @@ The implemented peer exposes select interfaces to be used with Aqua and operates
         N ->> N: Validate EIP712
     end
     N ->> N: Persist Result Locally (SQLite)
-    N ->> D: Persist result -- NOT implemented
+    N ->> D: Persist result Globally -- NOT implemented
 ```
 
 The PoC implementation does not provide integration with external Snapshot distributed persistence but allows for easy extension to incorporate exogenous storage solutions. The validation process, including not implemented checks, can be found in [eip_validation](./src/eip_processor.ts) and the local persistence in [local sqlite](./src/local_db.ts).
@@ -37,7 +37,7 @@ In addition, Aqua can be used to query a Peer's local database for already proce
 The peer-local SQLite table is [implemented](./src/local_db.ts) as:
 
 ```sql
-    snapshot_id integer unique,
+    signature text unique,
     event_address text,
     event_signature text,
     eip712_doc blob,
