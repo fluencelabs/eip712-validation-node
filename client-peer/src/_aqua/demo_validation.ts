@@ -80,10 +80,10 @@ export function registerEIPValidator(...args: any) {
 
 
 export interface DataProviderDef {
-    delete_records: (password: string, callParams: CallParams<'password'>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }>;
-get_record: (snapshot_id: number, callParams: CallParams<'snapshot_id'>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }>;
+    delete_records: (password: string, callParams: CallParams<'password'>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; }>;
+get_record: (signature: string, callParams: CallParams<'signature'>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; }>;
 get_record_count: (callParams: CallParams<null>) => number | Promise<number>;
-get_records: (callParams: CallParams<null>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }>;
+get_records: (callParams: CallParams<null>) => { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; } | Promise<{ stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; }>;
 }
 export function registerDataProvider(service: DataProviderDef): void;
 export function registerDataProvider(serviceId: string, service: DataProviderDef): void;
@@ -115,7 +115,7 @@ export function registerDataProvider(...args: any) {
             "functionName" : "get_record",
             "argDefs" : [
                 {
-                    "name" : "snapshot_id",
+                    "name" : "signature",
                     "argType" : {
                         "tag" : "primitive"
                     }
@@ -148,9 +148,9 @@ export function registerDataProvider(...args: any) {
       
 // Functions
  
-export type Get_recordResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }
-export function get_record(snapshot_id: number, node: string, relay: string, config?: {ttl?: number}): Promise<Get_recordResult>;
-export function get_record(peer: FluencePeer, snapshot_id: number, node: string, relay: string, config?: {ttl?: number}): Promise<Get_recordResult>;
+export type Get_recordResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; }
+export function get_record(signature: string, node: string, relay: string, config?: {ttl?: number}): Promise<Get_recordResult>;
+export function get_record(peer: FluencePeer, signature: string, node: string, relay: string, config?: {ttl?: number}): Promise<Get_recordResult>;
 export function get_record(...args: any) {
 
     let script = `
@@ -165,7 +165,7 @@ export function get_record(...args: any) {
                             (seq
                              (seq
                               (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                              (call %init_peer_id% ("getDataSrv" "snapshot_id") [] snapshot_id)
+                              (call %init_peer_id% ("getDataSrv" "signature") [] signature)
                              )
                              (call %init_peer_id% ("getDataSrv" "node") [] node)
                             )
@@ -176,7 +176,7 @@ export function get_record(...args: any) {
                           (call relay ("op" "noop") [])
                          )
                          (xor
-                          (call node ("DataProvider" "get_record") [snapshot_id] res)
+                          (call node ("DataProvider" "get_record") [signature] res)
                           (seq
                            (seq
                             (seq
@@ -210,7 +210,7 @@ export function get_record(...args: any) {
     },
     "argDefs" : [
         {
-            "name" : "snapshot_id",
+            "name" : "signature",
             "argType" : {
                 "tag" : "primitive"
             }
@@ -243,7 +243,7 @@ export function get_record(...args: any) {
 }
 
  
-export type Delete_recordsResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }
+export type Delete_recordsResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; }
 export function delete_records(password: string, node: string, relay: string, config?: {ttl?: number}): Promise<Delete_recordsResult>;
 export function delete_records(peer: FluencePeer, password: string, node: string, relay: string, config?: {ttl?: number}): Promise<Delete_recordsResult>;
 export function delete_records(...args: any) {
@@ -519,7 +519,7 @@ export function get_record_count(...args: any) {
 }
 
  
-export type Get_recordsResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; event_signature: string; peer_id: string; signed_response: string; snapshot_id: number; timestamp: number; ts_validation: boolean; }[]; }
+export type Get_recordsResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; }
 export function get_records(node: string, relay: string, config?: {ttl?: number}): Promise<Get_recordsResult>;
 export function get_records(peer: FluencePeer, node: string, relay: string, config?: {ttl?: number}): Promise<Get_recordsResult>;
 export function get_records(...args: any) {

@@ -58,7 +58,7 @@ async function main() {
     let _res = await delete_records(NODE_DB_PWD, poc_topologies[0].node_id, poc_topologies[0].relay_id);
   }
 
-  console.log("Lets validate proposal %s, which is old and should fail.", EIP712_URL);
+  console.log("Let's validate proposal %s, which is old and should fail.", EIP712_URL);
   let doc_val = await validate(EIP712_URL, poc_topologies[0].node_id, poc_topologies[0].relay_id);
   // if (doc_val.stderr.length > 0) {}
   console.log("signed eip validation result: ", doc_val);
@@ -71,12 +71,12 @@ async function main() {
     console.log("We should have one record in the node db and have %s record(s).", records.stdout.length);
   }
 
-  console.log("We know from the EIP document that the snapshot is 9278489, which i sued as a unique key in the sqlite db.")
-  console.log(" and we can call individual recirds by snapshot:")
-  let good_record = await get_record(9278489, poc_topologies[0].node_id, poc_topologies[0].relay_id);
-  let bad_record = await get_record(92784890, poc_topologies[0].node_id, poc_topologies[0].relay_id);
-  console.log("result for call with 9278489: ", good_record);
-  console.log("result for call with bad 92784890: ", bad_record);
+  console.log("We know from the EIP document that the signature is 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c, which is used as a unique key in the sqlite db.")
+  console.log(" and we can call individual records by signature.")
+  let good_record = await get_record("0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c", poc_topologies[0].node_id, poc_topologies[0].relay_id);
+  let bad_record = await get_record("0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1cX", poc_topologies[0].node_id, poc_topologies[0].relay_id);
+  console.log("result for call with 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c: ", good_record);
+  console.log("result for call with bad 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1cX: ", bad_record);
 
   return;
 }
