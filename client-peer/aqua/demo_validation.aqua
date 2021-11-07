@@ -64,3 +64,27 @@ func delete_records(password: string, node: string, relay:string) -> DBResult:
     <- result
 
 
+-- Example to collect many node validations and run them through a simple frequency count
+-- algorithm
+data EIPLocation:
+    node: string
+    relay: string
+
+service ConsensusService("ConsensusService"):
+    consensus([]bool) -> bool
+
+func eip_consensus((signature: string, node_locations:[]EIPLocation, service_node: string, consensus_service: string) -> bool:
+    result: *bool
+
+    for loc in node_locations par:
+        on node via relay:
+            res <- DataProvider.get_record(signature)
+            result <- res.ts_validation
+    
+    on service_node:
+        ConsensusService consensus_service
+        consensus <- ConsensusService.consensus(result)
+    <- consensus
+
+
+

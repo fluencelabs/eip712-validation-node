@@ -1,0 +1,5 @@
+client seed: Atj1pJWgYdPouPjDtfjR4CKtFmVkZTpdgRLVfr1sEsWa
+client peerId: 12D3KooWSsr82uqKsm6B3qkNkRXZ7x3tvHerMqPC23ipSAdK2RDM
+relay peerId: 12D3KooWHLxVhUQyAuZe6AHMB29P7wkvTNMn7eDMcsqimJYLKREf
+service id: 932e002f-12b9-48cd-9616-7f15bb1e4ef3
+service created successfully
