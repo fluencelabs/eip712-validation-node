@@ -67,23 +67,45 @@ func delete_records(password: string, node: string, relay:string) -> DBResult:
 -- Example to collect many node validations and run them through a simple frequency count
 -- algorithm
 data EIPLocation:
-    node: string
-    relay: string
+    node_id: string
+    relay_id: string
+
+data Consensus:
+  n: u64
+  threshold: f64
+  valid: u64
+  invalid: u64
+  consensus: bool
+
+data CResult:
+  stderr: string
+  stdout: []Consensus
 
 service ConsensusService("ConsensusService"):
-    consensus([]bool) -> bool
+    consensus(validations: []bool, threshold: f64) -> CResult
 
-func eip_consensus((signature: string, node_locations:[]EIPLocation, service_node: string, consensus_service: string) -> bool:
+
+
+func eip_consensus_halfway(signature: string, locations:[]EIPLocation, service_node: string, consensus_service: string, threshold: f64) -> []bool:
     result: *bool
 
-    for loc in node_locations par:
-        on node via relay:
+    for loc <- locations:
+        on loc.node_id via loc.relay_id:
             res <- DataProvider.get_record(signature)
-            result <- res.ts_validation
-    
+            result <<- res.stdout!0.ts_validation
+    <- result
+
+func eip_consensus(signature: string, locations:[]EIPLocation, service_node: string, consensus_service: string, threshold: f64) -> CResult:
+    result: *bool
+
+    for loc <- locations par:
+        on loc.node_id via loc.relay_id:
+            res <- DataProvider.get_record(signature)
+            result <<- res.stdout!0.ts_validation
+
     on service_node:
         ConsensusService consensus_service
-        consensus <- ConsensusService.consensus(result)
+        consensus <- ConsensusService.consensus(result, threshold)
     <- consensus
 
 

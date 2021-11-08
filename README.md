@@ -137,25 +137,23 @@ signed eip validation result:  {
 ```
 
 We should have one record in the node db and have 1 record(s).
-We know from the EIP document that the snapshot is 9278489, which i used as a unique key in the sqlite db and we can call individual recirds by snapshot id:
+We know from the EIP document that the snapshot is 9278489, which i used as a unique key in the sqlite db and we can call individual records by the signature:
 ```
-result for call with 9278489:  {
-  stderr: '',
+result for call with 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c:  stderr: '',
   stdout: [
     {
-      signature: 0xdd91572e2e721a59ca62abd4ec07c55b9496bf10969112e6c1dbb9936394bd5a602b2f697b1bb0910edb72a726bc1f05a0f13d9cbf5bc715f87211f40c75348e1c,
+      signature: '0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c',
       event_address: '0xeF8305E140ac520225DAf050e2f71d5fBcC543e7',
-      event_signature: '0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c',
       eip712_doc: '{"domain":{"name":"snapshot","version":"0.1.4"},"types":{"Proposal":[{"name":"from","type":"address"},{"name":"space","type":"string"},{"name":"timestamp","type":"uint64"},{"name":"type","type":"string"},{"name":"title","type":"string"},{"name":"body","type":"string"},{"name":"choices","type":"string[]"},{"name":"start","type":"uint64"},{"name":"end","type":"uint64"},{"name":"snapshot","type":"uint64"},{"name":"network","type":"string"},{"name":"strategies","type":"string"},{"name":"plugins","type":"string"},{"name":"metadata","type":"string"}]},"message":{"space":"fabien.eth","type":"single-choice","title":"This is a long title this is a long title this is a long title this is a long title this is a long title this is a long","body":"This is a long title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title.","choices":["Approve","Reject"],"start":1630472400,"end":1640926800,"snapshot":9278489,"network":"4","strategies":"[{\\"name\\":\\"ticket\\",\\"params\\":{\\"value\\":100,\\"symbol\\":\\"$\\"}}]","plugins":"{}","metadata":"{}","from":"0xeF8305E140ac520225DAf050e2f71d5fBcC543e7","timestamp":1631432106}}',
       peer_id: '0x14791697260E4c9A71f18484C9f997B308e59325',
-      timestamp: 1635119977,
+      timestamp: 1636325528,
       eip_validation: 1,
       ts_validation: 0,
-      signed_response: '0x2571d1f9d003bd5b24f26abd21e0ebafc57aa61f0c6e85f85a9e298ff577e03445cbf182991cf263e7a3ef505276eaa9d160b780355379bed55c912dfa23623f1b'
+      signed_response: '0x4bb6846fd1adf2c2bfcedeae915007ff3e5a16675ae2f130749e5dc5bb17f99b095328460b12fddf2c743e06b28a9e40a970ac33f572da7bba3c4bf9b94f7a451b'
     }
   ]
 }
-result for call with bad 92784890:  { stderr: '', stdout: [ null ] }
+result for call with bad 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1cX:  { stderr: '', stdout: [ null ] }
 ```
 
 ## Integration With Additional Store Solutions

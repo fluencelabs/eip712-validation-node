@@ -146,6 +146,48 @@ export function registerDataProvider(...args: any) {
     );
 }
       
+
+
+export interface ConsensusServiceDef {
+    consensus: (validations: boolean[], threshold: number, callParams: CallParams<'validations' | 'threshold'>) => { stderr: string; stdout: { consensus: boolean; invalid: number; n: number; threshold: number; valid: number; }[]; } | Promise<{ stderr: string; stdout: { consensus: boolean; invalid: number; n: number; threshold: number; valid: number; }[]; }>;
+}
+export function registerConsensusService(service: ConsensusServiceDef): void;
+export function registerConsensusService(serviceId: string, service: ConsensusServiceDef): void;
+export function registerConsensusService(peer: FluencePeer, service: ConsensusServiceDef): void;
+export function registerConsensusService(peer: FluencePeer, serviceId: string, service: ConsensusServiceDef): void;
+       
+
+export function registerConsensusService(...args: any) {
+    registerService(
+        args,
+        {
+    "defaultServiceId" : "ConsensusService",
+    "functions" : [
+        {
+            "functionName" : "consensus",
+            "argDefs" : [
+                {
+                    "name" : "validations",
+                    "argType" : {
+                        "tag" : "primitive"
+                    }
+                },
+                {
+                    "name" : "threshold",
+                    "argType" : {
+                        "tag" : "primitive"
+                    }
+                }
+            ],
+            "returnType" : {
+                "tag" : "primitive"
+            }
+        }
+    ]
+}
+    );
+}
+      
 // Functions
  
 export type Get_recordResult = { stderr: string; stdout: { eip712_doc: string; eip_validation: boolean; event_address: string; peer_id: string; signature: string; signed_response: string; timestamp: number; ts_validation: boolean; }[]; }
@@ -318,6 +360,127 @@ export function delete_records(...args: any) {
         },
         {
             "name" : "relay",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        }
+    ],
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+
+export function eip_consensus_halfway(signature: string, locations: { node_id: string; relay_id: string; }[], service_node: string, consensus_service: string, threshold: number, config?: {ttl?: number}): Promise<boolean>;
+export function eip_consensus_halfway(peer: FluencePeer, signature: string, locations: { node_id: string; relay_id: string; }[], service_node: string, consensus_service: string, threshold: number, config?: {ttl?: number}): Promise<boolean>;
+export function eip_consensus_halfway(...args: any) {
+
+    let script = `
+                        (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                            (call %init_peer_id% ("getDataSrv" "signature") [] signature)
+                           )
+                           (call %init_peer_id% ("getDataSrv" "locations") [] locations)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "service_node") [] service_node)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "consensus_service") [] consensus_service)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "threshold") [] threshold)
+                       )
+                       (fold locations loc
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (seq
+                             (call -relay- ("op" "noop") [])
+                             (call loc.$.relay_id! ("op" "noop") [])
+                            )
+                            (xor
+                             (seq
+                              (call loc.$.node_id! ("DataProvider" "get_record") [signature] res)
+                              (ap res.$.stdout.[0].ts_validation! $result)
+                             )
+                             (seq
+                              (seq
+                               (seq
+                                (call loc.$.relay_id! ("op" "noop") [])
+                                (call -relay- ("op" "noop") [])
+                               )
+                               (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                              )
+                              (call -relay- ("op" "noop") [])
+                             )
+                            )
+                           )
+                           (call loc.$.relay_id! ("op" "noop") [])
+                          )
+                          (call -relay- ("op" "noop") [])
+                         )
+                         (next loc)
+                        )
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [$result.$.[0]!])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction(
+        args,
+        {
+    "functionName" : "eip_consensus_halfway",
+    "returnType" : {
+        "tag" : "primitive"
+    },
+    "argDefs" : [
+        {
+            "name" : "signature",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "locations",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "service_node",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "consensus_service",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "threshold",
             "argType" : {
                 "tag" : "primitive"
             }
@@ -585,6 +748,148 @@ export function get_records(...args: any) {
         },
         {
             "name" : "relay",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        }
+    ],
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+export type Eip_consensusResult = { stderr: string; stdout: { consensus: boolean; invalid: number; n: number; threshold: number; valid: number; }[]; }
+export function eip_consensus(signature: string, locations: { node_id: string; relay_id: string; }[], service_node: string, consensus_service: string, threshold: number, config?: {ttl?: number}): Promise<Eip_consensusResult>;
+export function eip_consensus(peer: FluencePeer, signature: string, locations: { node_id: string; relay_id: string; }[], service_node: string, consensus_service: string, threshold: number, config?: {ttl?: number}): Promise<Eip_consensusResult>;
+export function eip_consensus(...args: any) {
+
+    let script = `
+                        (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (seq
+                             (seq
+                              (seq
+                               (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                               (call %init_peer_id% ("getDataSrv" "signature") [] signature)
+                              )
+                              (call %init_peer_id% ("getDataSrv" "locations") [] locations)
+                             )
+                             (call %init_peer_id% ("getDataSrv" "service_node") [] service_node)
+                            )
+                            (call %init_peer_id% ("getDataSrv" "consensus_service") [] consensus_service)
+                           )
+                           (call %init_peer_id% ("getDataSrv" "threshold") [] threshold)
+                          )
+                          (fold locations loc
+                           (par
+                            (seq
+                             (seq
+                              (seq
+                               (seq
+                                (call -relay- ("op" "noop") [])
+                                (call loc.$.relay_id! ("op" "noop") [])
+                               )
+                               (xor
+                                (seq
+                                 (call loc.$.node_id! ("DataProvider" "get_record") [signature] res)
+                                 (ap res.$.stdout.[0].ts_validation! $result)
+                                )
+                                (seq
+                                 (seq
+                                  (seq
+                                   (seq
+                                    (call loc.$.relay_id! ("op" "noop") [])
+                                    (call -relay- ("op" "noop") [])
+                                   )
+                                   (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                                  )
+                                  (call -relay- ("op" "noop") [])
+                                 )
+                                 (call loc.$.relay_id! ("op" "noop") [])
+                                )
+                               )
+                              )
+                              (call loc.$.relay_id! ("op" "noop") [])
+                             )
+                             (call service_node ("op" "noop") [])
+                            )
+                            (next loc)
+                           )
+                          )
+                         )
+                         (call -relay- ("op" "noop") [])
+                        )
+                        (xor
+                         (seq
+                          (call -relay- ("op" "noop") [])
+                          (call service_node (consensus_service "consensus") [$result threshold] consensus)
+                         )
+                         (seq
+                          (call -relay- ("op" "noop") [])
+                          (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                         )
+                        )
+                       )
+                       (call -relay- ("op" "noop") [])
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [consensus])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 4])
+                    )
+    `
+    return callFunction(
+        args,
+        {
+    "functionName" : "eip_consensus",
+    "returnType" : {
+        "tag" : "primitive"
+    },
+    "argDefs" : [
+        {
+            "name" : "signature",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "locations",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "service_node",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "consensus_service",
+            "argType" : {
+                "tag" : "primitive"
+            }
+        },
+        {
+            "name" : "threshold",
             "argType" : {
                 "tag" : "primitive"
             }

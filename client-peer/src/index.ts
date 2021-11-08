@@ -17,6 +17,7 @@
 import { Fluence, setLogLevel, FluencePeer } from "@fluencelabs/fluence";
 import { krasnodar, Node } from "@fluencelabs/fluence-network-environment";
 import { validate, get_record, get_records, get_record_count, delete_records } from "./_aqua/demo_validation";
+import { eip_consensus, eip_consensus_halfway } from "./_aqua/demo_validation";
 
 
 const NODE_DB_PWD = "bad really bad"; const PWD_HASH = "bad really bad";
@@ -24,7 +25,7 @@ const EIP712_URL = "https://ipfs.fleek.co/ipfs/QmWGzSQFm57ohEq2ATw4UNHWmYU2HkMjt
 
 interface NodeTuple {
   node_id: string;
-  relay_id: string
+  relay_id: string;
 }
 
 // PoC node parameters
@@ -35,6 +36,29 @@ let poc_topologies: Array<NodeTuple> = [
   },
 ];
 
+interface ServiceTuple {
+  node_id: string;
+  service_id: string;
+}
+
+let service_topology: ServiceTuple = {
+  "node_id": "12D3KooWHLxVhUQyAuZe6AHMB29P7wkvTNMn7eDMcsqimJYLKREf",
+  "service_id": "932e002f-12b9-48cd-9616-7f15bb1e4ef3"
+}
+
+
+interface Consensus {
+  n: number;
+  threshold: number;
+  valid: number;
+  invalid: number;
+  consensus: boolean;
+}
+
+interface CResult {
+  stderr: string;
+  stdout: Array<Consensus>; // always length 0 or 1
+}
 
 async function main() {
 
@@ -77,6 +101,18 @@ async function main() {
   let bad_record = await get_record("0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1cX", poc_topologies[0].node_id, poc_topologies[0].relay_id);
   console.log("result for call with 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c: ", good_record);
   console.log("result for call with bad 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1cX: ", bad_record);
+
+
+  let threshold: number = 0.666;
+  let sig = "0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c";
+  console.log("\n\nsimple consensus calculation for one (1) node  result with threshold ", threshold);
+
+  let half_way = await eip_consensus_halfway(sig, poc_topologies, service_topology.node_id, service_topology.service_id, threshold);
+  console.log("just for testing half_way: ", half_way);
+
+  let consensus = await eip_consensus(sig, poc_topologies, service_topology.node_id, service_topology.service_id, threshold);
+  console.log("consensus: ", consensus);
+
 
   return;
 }
