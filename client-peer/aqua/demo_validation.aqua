@@ -84,29 +84,20 @@ data CResult:
 service ConsensusService("ConsensusService"):
     consensus(validations: []bool, threshold: f64) -> CResult
 
-
-
-func eip_consensus_halfway(signature: string, locations:[]EIPLocation, service_node: string, consensus_service: string, threshold: f64) -> []bool:
-    result: *bool
-
-    for loc <- locations:
-        on loc.node_id via loc.relay_id:
-            res <- DataProvider.get_record(signature)
-            result <<- res.stdout!0.ts_validation
-    <- result
-
 func eip_consensus(signature: string, locations:[]EIPLocation, service_node: string, consensus_service: string, threshold: f64) -> CResult:
+-- func eip_consensus(signature: string, locations:[]EIPLocation, service_node: string, consensus_service: string, threshold: f64) -> []bool:
     result: *bool
 
-    for loc <- locations par:
+    -- for loc <- locations par:
+    for loc <- locations:  -- replace with above after compiler update
         on loc.node_id via loc.relay_id:
             res <- DataProvider.get_record(signature)
-            result <<- res.stdout!0.ts_validation
+            if res.stdout!0.ts_validation:
+                result <<- true
+            else:
+                result <<- false
 
     on service_node:
         ConsensusService consensus_service
         consensus <- ConsensusService.consensus(result, threshold)
     <- consensus
-
-
-

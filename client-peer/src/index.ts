@@ -17,7 +17,7 @@
 import { Fluence, setLogLevel, FluencePeer } from "@fluencelabs/fluence";
 import { krasnodar, Node } from "@fluencelabs/fluence-network-environment";
 import { validate, get_record, get_records, get_record_count, delete_records } from "./_aqua/demo_validation";
-import { eip_consensus, eip_consensus_halfway } from "./_aqua/demo_validation";
+import { eip_consensus } from "./_aqua/demo_validation";
 
 
 const NODE_DB_PWD = "bad really bad"; const PWD_HASH = "bad really bad";
@@ -106,9 +106,6 @@ async function main() {
   let threshold: number = 0.666;
   let sig = "0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c";
   console.log("\n\nsimple consensus calculation for one (1) node  result with threshold ", threshold);
-
-  let half_way = await eip_consensus_halfway(sig, poc_topologies, service_topology.node_id, service_topology.service_id, threshold);
-  console.log("just for testing half_way: ", half_way);
 
   let consensus = await eip_consensus(sig, poc_topologies, service_topology.node_id, service_topology.service_id, threshold);
   console.log("consensus: ", consensus);

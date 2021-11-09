@@ -138,22 +138,78 @@ signed eip validation result:  {
 
 We should have one record in the node db and have 1 record(s).
 We know from the EIP document that the snapshot is 9278489, which i used as a unique key in the sqlite db and we can call individual records by the signature:
-```
-result for call with 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c:  stderr: '',
+
+```bash
+result for call with 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c:  {
+  stderr: '',
   stdout: [
     {
       signature: '0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1c',
       event_address: '0xeF8305E140ac520225DAf050e2f71d5fBcC543e7',
       eip712_doc: '{"domain":{"name":"snapshot","version":"0.1.4"},"types":{"Proposal":[{"name":"from","type":"address"},{"name":"space","type":"string"},{"name":"timestamp","type":"uint64"},{"name":"type","type":"string"},{"name":"title","type":"string"},{"name":"body","type":"string"},{"name":"choices","type":"string[]"},{"name":"start","type":"uint64"},{"name":"end","type":"uint64"},{"name":"snapshot","type":"uint64"},{"name":"network","type":"string"},{"name":"strategies","type":"string"},{"name":"plugins","type":"string"},{"name":"metadata","type":"string"}]},"message":{"space":"fabien.eth","type":"single-choice","title":"This is a long title this is a long title this is a long title this is a long title this is a long title this is a long","body":"This is a long title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title title this is a long title this is a long title.","choices":["Approve","Reject"],"start":1630472400,"end":1640926800,"snapshot":9278489,"network":"4","strategies":"[{\\"name\\":\\"ticket\\",\\"params\\":{\\"value\\":100,\\"symbol\\":\\"$\\"}}]","plugins":"{}","metadata":"{}","from":"0xeF8305E140ac520225DAf050e2f71d5fBcC543e7","timestamp":1631432106}}',
       peer_id: '0x14791697260E4c9A71f18484C9f997B308e59325',
-      timestamp: 1636325528,
+      timestamp: 1636435771,
       eip_validation: 1,
       ts_validation: 0,
-      signed_response: '0x4bb6846fd1adf2c2bfcedeae915007ff3e5a16675ae2f130749e5dc5bb17f99b095328460b12fddf2c743e06b28a9e40a970ac33f572da7bba3c4bf9b94f7a451b'
+      signed_response: '0x6a59434f144f1b64e9e0a5b6516cee962a5fffaf382bb27158607a972b3ff7c06ec6620da307e237d9f621c76ec792f70f4a1b1995b10717573db6bca48af2861b'
     }
   ]
 }
 result for call with bad 0xc0a90a0bf43c0b774570608bf0279143b366b7880798112b678b416a7500576b41e19f7b4eb457d58de29be3a201f700fafab1f02179da0faae653b7e8ecf82b1cX:  { stderr: '', stdout: [ null ] }
+```
+
+In addition, we added a [simple consensus service](./services/consensus/README.md) and implemented it into our Aqua workflow:
+
+```aqua
+-- /client-peer/aqua/demo_validation.aqua
+-- Example to collect many node validations and run them through a simple frequency count
+-- algorithm
+data EIPLocation:
+    node_id: string
+    relay_id: string
+
+data Consensus:
+  n: u64
+  threshold: f64
+  valid: u64
+  invalid: u64
+  consensus: bool
+
+data CResult:
+  stderr: string
+  stdout: []Consensus
+
+service ConsensusService("ConsensusService"):
+    consensus(validations: []bool, threshold: f64) -> CResult
+func eip_consensus(signature: string, locations:[]EIPLocation, service_node: string, consensus_service: string, threshold: f64) -> CResult:
+-- func eip_consensus(signature: string, locations:[]EIPLocation, service_node: string, consensus_service: string, threshold: f64) -> []bool:
+    result: *bool
+
+    -- for loc <- locations par:
+    for loc <- locations:  -- replace with above after compiler update
+        on loc.node_id via loc.relay_id:
+            res <- DataProvider.get_record(signature)
+            if res.stdout!0.ts_validation:
+                result <<- true
+            else:
+                result <<- false
+
+    on service_node:
+        ConsensusService consensus_service
+        consensus <- ConsensusService.consensus(result, threshold)
+    <- consensus
+```
+
+Since we only have a single, not validated data point, we end up with no consensus on the validity of the proposal:
+
+```bash
+simple consensus calculation for one (1) node  result with threshold  0.666
+consensus:  {
+  stderr: '',
+  stdout: [
+    { consensus: false, invalid: 1, n: 1, threshold: 0.666, valid: 0 }
+  ]
+}
 ```
 
 ## Integration With Additional Store Solutions
