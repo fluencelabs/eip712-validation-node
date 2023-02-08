@@ -13,8 +13,8 @@
     "package-lock.json"
   ],
   "dependencies": {
-    "@fluencelabs/aqua-lib": "^0.4.3",
-    "@fluencelabs/fluence": "^0.23.0",
+    "@fluencelabs/aqua-lib": "^0.6.0",
+    "@fluencelabs/fluence": "^0.27.5",
     "@fluencelabs/fluence-network-environment": "^1.0.13",
     "it-all": "^1.0.5"
   },
@@ -38,8 +38,8 @@
   },
   "homepage": "git+https://github.com/fluencelabs/eip712-validation-node/blob/main/README.md",
   "devDependencies": {
-    "@fluencelabs/aqua": "^0.7.2-306",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.3"
+    "@fluencelabs/aqua": "^0.9.1-374",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
   }
 }
