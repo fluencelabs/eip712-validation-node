@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=../.fluence/schemas/service.yaml.json
+version: 0
+name: consensus
+modules:
+  facade:
+    get: consensus
+    loggerEnabled: false
