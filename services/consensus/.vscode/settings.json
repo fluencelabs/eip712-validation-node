@@ -1,0 +1,5 @@
+{
+  "aquaSettings.imports": [
+    "/Users/bebo/localdev/eip712-validation-node/services/consensus/.fluence/aqua"
+  ]
+}
