@@ -1,0 +1,11 @@
+{
+  "consensus-service": {
+    "name": "consensus",
+    "modules": [
+      {
+        "name": "consensus",
+        "path": "./artifacts/consensus.wasm"
+      }
+    ]
+  }
+}
