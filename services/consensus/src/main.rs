@@ -90,7 +90,7 @@ pub fn consensus(payload: Vec<bool>, threshold: f64) -> CResult {
 #[cfg(test)]
 mod tests {
     use marine_rs_sdk_test::marine_test;
-    #[marine_test(config_path = "../Config.toml", modules_dir = "../artifacts")]
+    #[marine_test(config_path = "../configs/Config.toml", modules_dir = "../artifacts")]
     fn test_consensus(consensus: marine_test_env::consensus::ModuleInterface) {
         let data_1 = vec![true, true, true, false, false];
         let data_2 = vec![true, true, false, false, false];
